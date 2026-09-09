@@ -1,0 +1,19 @@
+<!--
+  favicon.svg - VoltLink
+
+  The browser tab mark: a bolt inside a linked hexagonal cell, standing for
+  energy moving between connected nodes of the microgrid. Drawn as vector so
+  it stays sharp at every tab and bookmark size from one small file.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="8" fill="#4f46e5" />
+  <path
+    d="M16 4.6 26 10.3v11.4L16 27.4 6 21.7V10.3z"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="1.6"
+    stroke-linejoin="round"
+    opacity="0.45"
+  />
+  <path d="M17.6 9.2 10.4 18.6h4.7l-0.9 6.4 7.2-9.6h-4.7z" fill="#ffffff" />
+</svg>
