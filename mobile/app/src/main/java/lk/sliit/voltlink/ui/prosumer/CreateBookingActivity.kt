@@ -32,7 +32,9 @@ import lk.sliit.voltlink.data.remote.SlotDto
 import lk.sliit.voltlink.data.remote.StationDto
 import lk.sliit.voltlink.data.remote.UpdateReservationRequest
 import lk.sliit.voltlink.databinding.ActivityCreateBookingBinding
+import lk.sliit.voltlink.util.Formatters
 import lk.sliit.voltlink.util.SystemBars
+import java.util.Date
 
 class CreateBookingActivity : AppCompatActivity() {
 
@@ -45,6 +47,10 @@ class CreateBookingActivity : AppCompatActivity() {
 
     // Set when the screen was opened to change an existing booking.
     private var editingReservationId: String? = null
+
+    // The window of the booking being changed, selected once its node's
+    // windows have loaded and then cleared so a later node change starts fresh.
+    private var pendingSlotId: String? = null
 
     /**
      * Builds the screen, loads the nodes and wires the controls.
@@ -100,6 +106,28 @@ class CreateBookingActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                // A booking being changed opens the form as it currently
+                // stands: its node, its direction and its window. Without this
+                // the form always opened on the first node, so the user had to
+                // find their own booking again before changing anything.
+                val editingId = editingReservationId
+                val existing = if (editingId == null) {
+                    null
+                } else {
+                    ApiClient.call { AppServices.api.getReservation(editingId) }
+                }
+
+                if (existing != null) {
+                    pendingSlotId = existing.slotId
+                    binding.toggleType.check(
+                        if (existing.type == ApiConstants.TYPE_WITHDRAWAL) {
+                            R.id.buttonWithdrawal
+                        } else {
+                            R.id.buttonInjection
+                        }
+                    )
+                }
+
                 val labels = stations.map { "${it.name} (${it.code})" }
                 val adapter = ArrayAdapter(
                     this@CreateBookingActivity,
@@ -112,10 +140,13 @@ class CreateBookingActivity : AppCompatActivity() {
                     selectStation(stations[position])
                 }
 
-                // Open on the first node so the user sees windows immediately
-                // rather than an empty list.
-                binding.inputStation.setText(labels.first(), false)
-                selectStation(stations.first())
+                // Open on the booking's own node when changing one, otherwise
+                // on the first node so the user sees windows immediately.
+                val initialIndex = stations.indexOfFirst { it.id == existing?.stationId }
+                    .takeIf { it >= 0 } ?: 0
+
+                binding.inputStation.setText(labels[initialIndex], false)
+                selectStation(stations[initialIndex])
             } catch (error: ApiException) {
                 showError(error.message)
             } finally {
@@ -135,10 +166,18 @@ class CreateBookingActivity : AppCompatActivity() {
         loadSlots(station.id)
     }
 
+    // Numbers the window requests so only the most recent one fills the list.
+    // Choosing one node and then another before the first reply arrived let
+    // the slower reply land last, showing one node's windows under another
+    // node's name, and a booking made from that list went to the wrong node.
+    private var latestSlotsRequest = 0
+
     /**
      * Fetches the bookable windows for a node.
      */
     private fun loadSlots(stationId: String) {
+        val request = ++latestSlotsRequest
+
         binding.progress.visibility = View.VISIBLE
         binding.textError.visibility = View.GONE
 
@@ -146,19 +185,43 @@ class CreateBookingActivity : AppCompatActivity() {
             try {
                 val slots = ApiClient.call { AppServices.api.listSlots(stationId) }
 
-                // Windows already in the past are dropped, because the service
-                // would refuse them and there is no point offering them.
-                val bookable = slots.filter { it.isActive }
+                // A different node was chosen while this one was loading.
+                if (request != latestSlotsRequest) return@launch
+
+                // Windows that have already started are dropped, because the
+                // service would refuse them and there is no point offering
+                // them. A start time that cannot be read is kept, and left for
+                // the service to judge.
+                val now = Date()
+                val bookable = slots.filter { slot ->
+                    slot.isActive &&
+                        (Formatters.parseUtc(slot.startTimeUtc)?.after(now) ?: true)
+                }
 
                 slotAdapter.submit(bookable)
+
+                val preselected = bookable.firstOrNull { it.id == pendingSlotId }
+                if (preselected != null) {
+                    slotAdapter.preselect(preselected.id)
+                    selectedSlot = preselected
+                }
+                pendingSlotId = null
                 binding.textNoSlots.visibility =
                     if (bookable.isEmpty()) View.VISIBLE else View.GONE
             } catch (error: ApiException) {
+                // A failure for a node the user has since moved away from must
+                // not empty the list that now belongs to the newer node.
+                if (request != latestSlotsRequest) return@launch
+
                 slotAdapter.submit(emptyList())
                 showError(error.message)
             } finally {
-                binding.progress.visibility = View.GONE
-                updateConfirmState()
+                // The spinner and the button belong to the newest request, which
+                // is still running when an older one finishes.
+                if (request == latestSlotsRequest) {
+                    binding.progress.visibility = View.GONE
+                    updateConfirmState()
+                }
             }
         }
     }

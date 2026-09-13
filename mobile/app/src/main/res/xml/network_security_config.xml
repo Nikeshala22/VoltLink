@@ -19,7 +19,10 @@
         <domain includeSubdomains="false">10.0.2.2</domain>
 
         <!-- The development machine's address on the local network, used when
-             the application runs on a physical handset. -->
+             the application runs on a physical handset. It must match the
+             host in API_BASE_URL in local.properties, or a release build is
+             refused with a cleartext error before the request is sent. -->
+        <domain includeSubdomains="false">192.168.1.167</domain>
         <domain includeSubdomains="false">192.168.1.190</domain>
 
         <!-- Loopback, for a service reached through a port forward. -->

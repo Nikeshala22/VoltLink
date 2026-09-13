@@ -113,6 +113,15 @@ Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name managedRuntimeVersion -Value
 Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name startMode -Value "AlwaysRunning"
 Write-Ok "Set managed runtime to 'No Managed Code'."
 
+# By default IIS shuts a pool down after 20 idle minutes and recycles it every
+# 29 hours. The next request after either one pays for a cold start: loading
+# .NET, connecting to MongoDB Atlas and verifying indexes, which was measured at
+# over 20 seconds. Long enough for the mobile app to look frozen. Both are
+# switched off so the API stays warm between demonstrations.
+Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name processModel.idleTimeout -Value ([TimeSpan]::Zero)
+Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name recycling.periodicRestart.time -Value ([TimeSpan]::Zero)
+Write-Ok "Disabled idle shutdown and scheduled recycling."
+
 # -----------------------------------------------------------------------------
 # 4. Stop the site before replacing files, so no DLL is locked mid copy.
 # -----------------------------------------------------------------------------
@@ -173,6 +182,12 @@ if (-not $siteExists) {
     Set-ItemProperty "IIS:\Sites\$SiteName" -Name applicationPool -Value $AppPoolName
     Write-Ok "Updated existing site '$SiteName'."
 }
+
+# Preload starts the application as soon as the pool starts, instead of waiting
+# for the first request to arrive, so nobody is left waiting through a cold start.
+# It takes effect when the IIS "Application Initialization" feature is installed.
+Set-ItemProperty "IIS:\Sites\$SiteName" -Name applicationDefaults.preloadEnabled -Value $true
+Write-Ok "Enabled preload."
 
 # -----------------------------------------------------------------------------
 # 8. Allow other devices on the network to reach the API.

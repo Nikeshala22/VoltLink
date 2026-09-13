@@ -20,6 +20,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.CancellationException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -53,6 +54,13 @@ object ApiClient {
     private val gson = Gson()
 
     /**
+     * Called when the service refuses a request as unauthorised, which means
+     * the stored token has expired or been revoked. Set by AppServices, which
+     * owns the session and the navigation back to the sign in screen.
+     */
+    var onSessionRejected: (() -> Unit)? = null
+
+    /**
      * Creates the Retrofit implementation of the API description.
      *
      * The token is read from the local database on every request rather than
@@ -79,6 +87,11 @@ object ApiClient {
             } else {
                 HttpLoggingInterceptor.Level.NONE
             }
+
+            // Even in a debug build the token itself stays out of logcat, where
+            // any tool attached to the device could otherwise copy it and act
+            // as the signed in user until it expires.
+            redactHeader("Authorization")
         }
 
         val client = OkHttpClient.Builder()
@@ -99,6 +112,15 @@ object ApiClient {
     }
 
     /**
+     * Reports whether the stored token is already past its expiry time. Set by
+     * AppServices, which owns the session.
+     */
+    var isSessionExpired: (() -> Boolean)? = null
+
+    /** Error code for a request stopped on the device because the token had expired. */
+    const val CODE_SESSION_EXPIRED = "SESSION_EXPIRED"
+
+    /**
      * Runs an API call and returns its body, or throws an ApiException that
      * explains why it failed.
      *
@@ -106,8 +128,22 @@ object ApiClient {
      * translation exist in exactly one place.
      */
     suspend fun <T> call(block: suspend () -> Response<T>): T {
+        // When Android restarts a process it killed in the background, it
+        // reopens the last screen directly and the splash screen's expiry check
+        // never runs. A token already known to have expired is certain to be
+        // refused, and sending it anyway kept the user waiting on the round
+        // trip, over twenty seconds on a cold IIS start, before sign in opened.
+        if (isSessionExpired?.invoke() == true) {
+            onSessionRejected?.invoke()
+            throw ApiException(CODE_SESSION_EXPIRED, 401, defaultMessageFor(401))
+        }
+
         val response = try {
             block()
+        } catch (cancelled: CancellationException) {
+            // The screen that started the call has closed. Cancellation has to
+            // propagate untouched, or the coroutine would carry on regardless.
+            throw cancelled
         } catch (io: IOException) {
             // The request never reached the service: no connection, the wrong
             // address, or cleartext traffic blocked for that host.
@@ -116,6 +152,16 @@ object ApiClient {
                 0,
                 "Could not reach the VoltLink service. Check that the API is running " +
                     "and that this device can reach ${BuildConfig.API_BASE_URL}"
+            )
+        } catch (unreadable: Exception) {
+            // Gson throws when a body is not the JSON it expects, for example an
+            // IIS error page returned in place of the API's reply. Every screen
+            // only catches ApiException, so anything else here would crash the
+            // application instead of showing a message.
+            throw ApiException(
+                ApiException.CODE_UNKNOWN,
+                -1,
+                "The VoltLink service sent a response this app could not read."
             )
         }
 
@@ -129,6 +175,12 @@ object ApiClient {
                 response.code(),
                 "The service returned an empty response."
             )
+        }
+
+        // An expired token is refused on every screen alike, so it is dealt
+        // with here once rather than each screen having to notice it.
+        if (response.code() == 401) {
+            onSessionRejected?.invoke()
         }
 
         throw toApiException(response)

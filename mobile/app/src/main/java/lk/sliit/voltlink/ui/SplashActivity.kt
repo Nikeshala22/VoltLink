@@ -27,6 +27,14 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // A token that has already expired would only be refused by the
+        // service, after the home screen had opened and waited on the network,
+        // so it is discarded here and the user is asked to sign in straight
+        // away instead.
+        if (!AppServices.hasValidSession()) {
+            AppServices.signOut()
+        }
+
         // The session is read from SQLite, which is why a user who has signed
         // in once is taken straight to their home screen on later launches.
         val session = AppServices.store.getSession()

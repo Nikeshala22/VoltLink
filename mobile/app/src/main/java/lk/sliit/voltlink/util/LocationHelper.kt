@@ -22,6 +22,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** A position on the earth, as latitude and longitude. */
 data class LatLngPoint(val latitude: Double, val longitude: Double)
@@ -30,6 +31,12 @@ object LocationHelper {
 
     /** Colombo, used when the handset has no position of its own to offer. */
     val FALLBACK = LatLngPoint(6.9271, 79.8612)
+
+    // How long to wait for a position before giving up. The station list and
+    // the map hold their spinner until one arrives, and a location service
+    // that never answers, which Google Play services on an emulator regularly
+    // does, otherwise left both screens spinning with nothing loaded.
+    private const val POSITION_TIMEOUT_MS = 8_000L
 
     /** True when the user has granted either location permission. */
     fun hasPermission(context: Context): Boolean {
@@ -45,10 +52,12 @@ object LocationHelper {
     }
 
     /**
-     * Returns the current position, or null when it cannot be determined.
+     * Returns the current position, or null when it cannot be determined
+     * within a few seconds.
      *
-     * Suspends until the location service answers, so the caller can await it
-     * like any other asynchronous step rather than nesting callbacks.
+     * Suspends until the location service answers or the wait runs out, so the
+     * caller can await it like any other asynchronous step rather than nesting
+     * callbacks.
      */
     @SuppressLint("MissingPermission")
     suspend fun currentPosition(context: Context): LatLngPoint? {
@@ -59,22 +68,28 @@ object LocationHelper {
         val client = LocationServices.getFusedLocationProviderClient(context)
         val cancellation = CancellationTokenSource()
 
-        return suspendCancellableCoroutine { continuation ->
-            // If the coroutine is cancelled, for example because the screen
-            // closed, the location request is cancelled with it.
-            continuation.invokeOnCancellation { cancellation.cancel() }
+        // Running out of time cancels the coroutine below, which cancels the
+        // location request in turn, so nothing is left running afterwards.
+        return withTimeoutOrNull(POSITION_TIMEOUT_MS) {
+            suspendCancellableCoroutine<LatLngPoint?> { continuation ->
+                // If the coroutine is cancelled, for example because the screen
+                // closed, the location request is cancelled with it.
+                continuation.invokeOnCancellation { cancellation.cancel() }
 
-            client.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellation.token)
-                .addOnSuccessListener { location ->
-                    val point = location?.let { LatLngPoint(it.latitude, it.longitude) }
+                client.getCurrentLocation(
+                    Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellation.token
+                )
+                    .addOnSuccessListener { location ->
+                        val point = location?.let { LatLngPoint(it.latitude, it.longitude) }
 
-                    if (continuation.isActive) continuation.resume(point)
-                }
-                .addOnFailureListener {
-                    // A failure is reported as "no position" so the caller can
-                    // fall back rather than the whole screen failing.
-                    if (continuation.isActive) continuation.resume(null)
-                }
+                        if (continuation.isActive) continuation.resume(point)
+                    }
+                    .addOnFailureListener {
+                        // A failure is reported as "no position" so the caller
+                        // can fall back rather than the whole screen failing.
+                        if (continuation.isActive) continuation.resume(null)
+                    }
+            }
         }
     }
 }
