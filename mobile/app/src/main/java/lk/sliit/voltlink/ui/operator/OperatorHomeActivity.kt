@@ -194,7 +194,7 @@ class OperatorHomeActivity : AppCompatActivity() {
     /**
      * Gives one tile its own symbol and colour.
      *
-     * Four identical amber bolts would tell the reader nothing, so each count
+     * Four identical blue bolts would tell the reader nothing, so each count
      * carries the icon of the state it reports.
      */
     private fun styleTile(

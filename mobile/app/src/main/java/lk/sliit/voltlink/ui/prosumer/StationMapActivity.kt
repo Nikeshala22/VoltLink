@@ -190,7 +190,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     .position(point)
                     .title(station.name)
                     .snippet("${station.code} - ${station.city}")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
 
             if (marker != null) {

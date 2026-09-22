@@ -35,12 +35,12 @@
   {
     "featureType": "road.highway",
     "elementType": "geometry",
-    "stylers": [{ "color": "#3a2a08" }]
+    "stylers": [{ "color": "#172a4f" }]
   },
   {
     "featureType": "road.highway",
     "elementType": "geometry.stroke",
-    "stylers": [{ "color": "#241a06" }]
+    "stylers": [{ "color": "#0f1d38" }]
   },
   {
     "featureType": "transit",

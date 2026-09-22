@@ -7,7 +7,7 @@
 
   Three deliberate choices:
     * The neutral ramp is inverted, so ink_900 is still "the strongest text".
-    * The brand amber is lightened, because the darker amber used on white is
+    * The brand blue is lightened, because the darker blue used on white is
       too low in contrast against a dark surface.
     * Status backgrounds become deep tints with a light foreground, rather than
       pale fills with dark text, which would glare on a dark screen.
@@ -26,13 +26,13 @@
     <color name="rail_muted">#FF94A3B8</color>
 
     <!-- Brand, lifted for contrast against a dark surface -->
-    <color name="brand_500">#FFFBBF24</color>
-    <color name="brand_600">#FFFCD34D</color>
-    <color name="brand_700">#FFF59E0B</color>
-    <color name="brand_100">#FF3A2A08</color>
-    <color name="brand_fg">#FF3B2703</color>
-    <color name="brand_soft">#FF3A2A08</color>
-    <color name="brand_soft_fg">#FFFDE68A</color>
+    <color name="brand_500">#FF60A5FA</color>
+    <color name="brand_600">#FF93C5FD</color>
+    <color name="brand_700">#FF3B82F6</color>
+    <color name="brand_100">#FF172A4F</color>
+    <color name="brand_fg">#FF0B1B3A</color>
+    <color name="brand_soft">#FF172A4F</color>
+    <color name="brand_soft_fg">#FFBFDBFE</color>
 
     <!-- Neutral ramp, inverted -->
     <color name="ink_900">#FFF8FAFC</color>
@@ -45,8 +45,8 @@
     <color name="ink_50">#FF111C31</color>
 
     <!-- Reservation status colours -->
-    <color name="status_pending_bg">#FF3E2C09</color>
-    <color name="status_pending_fg">#FFFCD34D</color>
+    <color name="status_pending_bg">#FF0C2D40</color>
+    <color name="status_pending_fg">#FF7DD3FC</color>
     <color name="status_approved_bg">#FF13294C</color>
     <color name="status_approved_fg">#FF93C5FD</color>
     <color name="status_completed_bg">#FF06301F</color>
