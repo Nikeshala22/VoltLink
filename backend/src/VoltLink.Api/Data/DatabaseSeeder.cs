@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : DatabaseSeeder.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Data
-// Description : Creates the very first Backoffice account when the users
-//               collection contains none. Without this there would be no way
-//               to sign in to the web application on a fresh database.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using MongoDB.Bson;
 using VoltLink.Api.Models;
 using VoltLink.Api.Repositories;
@@ -16,9 +5,7 @@ using VoltLink.Api.Security;
 
 namespace VoltLink.Api.Data;
 
-/// <summary>
-/// Puts the minimum data needed to use the system into an empty database.
-/// </summary>
+
 public class DatabaseSeeder
 {
     private readonly IUserRepository _users;
@@ -26,9 +13,7 @@ public class DatabaseSeeder
     private readonly IConfiguration _configuration;
     private readonly ILogger<DatabaseSeeder> _logger;
 
-    /// <summary>
-    /// Receives its collaborators from dependency injection.
-    /// </summary>
+
     public DatabaseSeeder(
         IUserRepository users,
         IPasswordHasher passwordHasher,
@@ -41,11 +26,7 @@ public class DatabaseSeeder
         _logger = logger;
     }
 
-    /// <summary>
-    /// Creates the bootstrap back-office account if, and only if, no
-    /// Backoffice user exists yet. Running this on every start-up is therefore
-    /// safe and never overwrites a changed password.
-    /// </summary>
+
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         // If an administrator already exists there is nothing to do.
@@ -56,8 +37,7 @@ public class DatabaseSeeder
             return;
         }
 
-        // Read the bootstrap credentials from configuration so they are not
-        // hard coded in the source, and can be overridden per environment.
+        
         var email = _configuration["SeedAdmin:Email"] ?? "admin@voltlink.lk";
         var password = _configuration["SeedAdmin:Password"] ?? "Admin@123";
         var fullName = _configuration["SeedAdmin:FullName"] ?? "System Administrator";
@@ -78,8 +58,7 @@ public class DatabaseSeeder
 
         await _users.InsertAsync(admin, cancellationToken);
 
-        // Announce the account so the developer knows how to sign in, and warn
-        // that the default password must be changed before the demonstration.
+       
         _logger.LogWarning(
             "Seeded initial back-office account '{Email}'. Change this password before deployment.",
             admin.Email);

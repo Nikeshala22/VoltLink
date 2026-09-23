@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : UsersController.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Controllers
-// Description : Back-office administration of web application accounts, that
-//               is Backoffice and GridOperator users. The whole controller is
-//               restricted to back-office officers.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VoltLink.Api.Dtos;
@@ -17,11 +6,7 @@ using VoltLink.Api.Services;
 
 namespace VoltLink.Api.Controllers;
 
-/// <summary>
-/// Creates and maintains staff accounts. Applying the policy at the class
-/// level means every action inherits the same restriction, so a new endpoint
-/// cannot accidentally be left unprotected.
-/// </summary>
+
 [ApiController]
 [Route("api/v1/users")]
 [Produces("application/json")]
@@ -30,18 +15,12 @@ public class UsersController : ControllerBase
 {
     private readonly IAccountService _accounts;
 
-    /// <summary>
-    /// Receives the account service from dependency injection.
-    /// </summary>
     public UsersController(IAccountService accounts)
     {
         _accounts = accounts;
     }
 
-    /// <summary>
-    /// Lists accounts, optionally filtered by role, activation state and a
-    /// free text search across identifier, name and email.
-    /// </summary>
+   
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<UserResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<UserResponse>>> ListAsync(
@@ -57,9 +36,6 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
-    /// <summary>
-    /// Returns a single account by its identifier.
-    /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -70,9 +46,7 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    /// <summary>
-    /// Creates a Backoffice or GridOperator account.
-    /// </summary>
+    
     [HttpPost]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -83,9 +57,7 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
     }
 
-    /// <summary>
-    /// Updates the editable profile fields of an account.
-    /// </summary>
+  
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -96,9 +68,7 @@ public class UsersController : ControllerBase
         return Ok(updated);
     }
 
-    /// <summary>
-    /// Activates an account so that it can sign in again.
-    /// </summary>
+
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,9 +79,7 @@ public class UsersController : ControllerBase
         return Ok(updated);
     }
 
-    /// <summary>
-    /// Deactivates an account so that it can no longer sign in.
-    /// </summary>
+    
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

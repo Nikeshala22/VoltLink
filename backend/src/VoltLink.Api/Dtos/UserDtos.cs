@@ -1,22 +1,7 @@
-// -----------------------------------------------------------------------------
-// File        : UserDtos.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Dtos
-// Description : Request and response contracts for account related endpoints.
-//               These types exist so that MongoDB documents are never exposed
-//               directly: the password hash, for example, can never leak into
-//               a response because it is not part of any response contract.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using System.ComponentModel.DataAnnotations;
 
 namespace VoltLink.Api.Dtos;
 
-/// <summary>
-/// Account details returned to the web and Android clients.
-/// </summary>
 public record UserResponse(
     string Id,
     string FullName,
@@ -28,9 +13,6 @@ public record UserResponse(
     bool DeactivationRequested,
     DateTime CreatedAtUtc);
 
-/// <summary>
-/// Credentials supplied at login by either client.
-/// </summary>
 public class LoginRequest
 {
     [Required(ErrorMessage = "Email is required.")]
@@ -41,19 +23,11 @@ public class LoginRequest
     public string Password { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// Successful login result: the token plus the profile of the signed in user,
-/// which lets the client route straight to the correct home screen.
-/// </summary>
 public record LoginResponse(
     string AccessToken,
     DateTime ExpiresAtUtc,
     UserResponse User);
 
-/// <summary>
-/// Self service registration submitted from the Android application.
-/// The NIC becomes the primary key of the created document.
-/// </summary>
 public class RegisterProsumerRequest
 {
     [Required(ErrorMessage = "NIC is required.")]
@@ -78,9 +52,6 @@ public class RegisterProsumerRequest
     public string Password { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// Creation of a Backoffice or GridOperator account by a back-office officer.
-/// </summary>
 public class CreateStaffUserRequest
 {
     [Required(ErrorMessage = "Full name is required.")]
@@ -102,21 +73,14 @@ public class CreateStaffUserRequest
     public string Password { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// Creation of a prosumer account by a back-office officer, as opposed to
-/// self service registration from the mobile application.
-/// </summary>
+
 public class CreateProsumerRequest : RegisterProsumerRequest
 {
-    // A back-office created prosumer may be activated straight away, because
-    // an officer has already checked the details.
+    
     public bool ActivateImmediately { get; set; } = true;
 }
 
-/// <summary>
-/// Editable profile fields. Role, activation state and password are changed
-/// through their own dedicated endpoints so each has its own authorisation.
-/// </summary>
+
 public class UpdateUserRequest
 {
     [Required(ErrorMessage = "Full name is required.")]

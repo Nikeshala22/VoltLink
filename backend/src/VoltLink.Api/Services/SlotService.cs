@@ -1,16 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : SlotService.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Services
-// Description : Implements the energy booking slot rules: a window must belong
-//               to an active station, must end after it starts, must not clash
-//               with another window at the same station, cannot have its
-//               capacity cut below what is already booked, and cannot be
-//               deleted while prosumers still hold reservations against it.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using VoltLink.Api.Dtos;
 using VoltLink.Api.Middleware;
 using VoltLink.Api.Models;
@@ -18,9 +5,7 @@ using VoltLink.Api.Repositories;
 
 namespace VoltLink.Api.Services;
 
-/// <summary>
-/// Central implementation of the booking slot rules.
-/// </summary>
+
 public class SlotService : ISlotService
 {
     private readonly ISlotRepository _slots;
@@ -28,9 +13,7 @@ public class SlotService : ISlotService
     private readonly IReservationRepository _reservations;
     private readonly ILogger<SlotService> _logger;
 
-    /// <summary>
-    /// Receives its collaborators from dependency injection.
-    /// </summary>
+
     public SlotService(
         ISlotRepository slots,
         IStationRepository stations,
@@ -43,9 +26,7 @@ public class SlotService : ISlotService
         _logger = logger;
     }
 
-    /// <summary>
-    /// Lists the booking windows of a station within an optional date range.
-    /// </summary>
+   
     public async Task<IReadOnlyList<SlotResponse>> ListByStationAsync(
         string stationId,
         DateTime? fromUtc = null,
@@ -53,8 +34,7 @@ public class SlotService : ISlotService
         bool? isActive = null,
         CancellationToken cancellationToken = default)
     {
-        // Confirm the station exists so an unknown identifier reports a clear
-        // not found error rather than silently returning an empty list.
+        
         await GetRequiredStationAsync(stationId, cancellationToken);
 
         var slots = await _slots.ListByStationAsync(
@@ -63,25 +43,20 @@ public class SlotService : ISlotService
         return slots.ToResponseList();
     }
 
-    /// <summary>
-    /// Returns one booking window, or reports that it does not exist.
-    /// </summary>
-    public async Task<SlotResponse> GetByIdAsync(
+       public async Task<SlotResponse> GetByIdAsync(
         string id, CancellationToken cancellationToken = default)
     {
         var slot = await GetRequiredSlotAsync(id, cancellationToken);
         return slot.ToResponse();
     }
 
-    /// <summary>
-    /// Creates a booking window at a station.
-    /// </summary>
+
     public async Task<SlotResponse> CreateAsync(
         string stationId, CreateSlotRequest request, CancellationToken cancellationToken = default)
     {
         var station = await GetRequiredStationAsync(stationId, cancellationToken);
 
-        // A decommissioned node must not take on new obligations.
+       
         if (!station.IsActive)
         {
             throw new BusinessRuleViolationException(
@@ -89,15 +64,13 @@ public class SlotService : ISlotService
                 "Booking windows cannot be added to a station that is not active.");
         }
 
-        // Normalise to UTC so comparisons and storage are unambiguous whatever
-        // the client sent.
+        
         var startUtc = NormaliseToUtc(request.StartTimeUtc);
         var endUtc = NormaliseToUtc(request.EndTimeUtc);
 
         EnsureWindowValid(startUtc, endUtc);
 
-        // The database has a unique index on station and start time; checking
-        // first turns a driver duplicate key error into a clear message.
+       
         if (await _slots.ExistsAtStartAsync(stationId, startUtc, cancellationToken: cancellationToken))
         {
             throw new ConflictException(
@@ -126,9 +99,7 @@ public class SlotService : ISlotService
         return slot.ToResponse();
     }
 
-    /// <summary>
-    /// Updates an existing booking window.
-    /// </summary>
+  
     public async Task<SlotResponse> UpdateAsync(
         string id, UpdateSlotRequest request, CancellationToken cancellationToken = default)
     {
@@ -139,8 +110,7 @@ public class SlotService : ISlotService
 
         EnsureWindowValid(startUtc, endUtc);
 
-        // Capacity may not be cut below the number of places already taken,
-        // because that would leave existing bookings without a place.
+       
         if (request.Capacity < slot.BookedCount)
         {
             throw new BusinessRuleViolationException(
@@ -149,8 +119,7 @@ public class SlotService : ISlotService
                 $"{slot.BookedCount} place(s) are already booked.");
         }
 
-        // Moving the window to a time another window already occupies would
-        // violate the unique index on station and start time.
+     
         if (startUtc != slot.StartTimeUtc &&
             await _slots.ExistsAtStartAsync(slot.StationId, startUtc, slot.Id, cancellationToken))
         {
@@ -170,16 +139,12 @@ public class SlotService : ISlotService
         return slot.ToResponse();
     }
 
-    /// <summary>
-    /// Deletes a booking window, provided no prosumer is still holding a
-    /// reservation against it.
-    /// </summary>
+   
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         var slot = await GetRequiredSlotAsync(id, cancellationToken);
 
-        // Deleting a booked window would orphan those reservations, so refuse
-        // and let staff cancel them explicitly first.
+        
         if (await _reservations.HasActiveForSlotAsync(slot.Id, cancellationToken))
         {
             throw new BusinessRuleViolationException(
@@ -192,9 +157,7 @@ public class SlotService : ISlotService
         _logger.LogInformation("Booking window {SlotId} deleted.", slot.Id);
     }
 
-    /// <summary>
-    /// Confirms a window ends after it starts and is not absurdly long.
-    /// </summary>
+  
     private static void EnsureWindowValid(DateTime startUtc, DateTime endUtc)
     {
         if (endUtc <= startUtc)
@@ -210,28 +173,22 @@ public class SlotService : ISlotService
         }
     }
 
-    /// <summary>
-    /// Treats an incoming time as UTC so that storage and every later
-    /// comparison use one consistent reference, whatever the client sent.
-    /// </summary>
+  
     private static DateTime NormaliseToUtc(DateTime value)
     {
         return value.Kind switch
         {
             DateTimeKind.Utc => value,
 
-            // A local time is converted properly rather than reinterpreted.
+           
             DateTimeKind.Local => value.ToUniversalTime(),
 
-            // An unspecified kind is assumed to already be UTC, which is what
-            // the API documentation asks clients to send.
+          
             _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
         };
     }
 
-    /// <summary>
-    /// Loads a station and throws a not found error when it does not exist.
-    /// </summary>
+
     private async Task<SolarStation> GetRequiredStationAsync(
         string stationId, CancellationToken cancellationToken)
     {
@@ -245,9 +202,7 @@ public class SlotService : ISlotService
         return station;
     }
 
-    /// <summary>
-    /// Loads a booking window and throws a not found error when it is missing.
-    /// </summary>
+  
     private async Task<EnergyBookingSlot> GetRequiredSlotAsync(
         string id, CancellationToken cancellationToken)
     {

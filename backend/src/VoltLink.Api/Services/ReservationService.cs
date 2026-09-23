@@ -1,17 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : ReservationService.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Services
-// Description : Implements every energy reservation rule required by the
-//               specification: a booking must start within seven days, changes
-//               and cancellations need twelve hours notice, a slot cannot be
-//               overbooked, only active prosumers and stations may trade, and
-//               an approved booking carries a single use QR token that a grid
-//               operator verifies against the server before completing it.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using MongoDB.Bson;
 using VoltLink.Api.Dtos;
 using VoltLink.Api.Middleware;
@@ -21,9 +7,7 @@ using VoltLink.Api.Security;
 
 namespace VoltLink.Api.Services;
 
-/// <summary>
-/// Central implementation of the reservation rules for both clients.
-/// </summary>
+
 public class ReservationService : IReservationService
 {
     private readonly IReservationRepository _reservations;
@@ -33,9 +17,7 @@ public class ReservationService : IReservationService
     private readonly IQrTokenService _qrTokens;
     private readonly ILogger<ReservationService> _logger;
 
-    /// <summary>
-    /// Receives its collaborators from dependency injection.
-    /// </summary>
+
     public ReservationService(
         IReservationRepository reservations,
         ISlotRepository slots,
@@ -52,9 +34,7 @@ public class ReservationService : IReservationService
         _logger = logger;
     }
 
-    /// <summary>
-    /// Creates a booking against a slot.
-    /// </summary>
+
     public async Task<ReservationSummaryResponse> CreateAsync(
         CreateReservationRequest request,
         CallerContext caller,
@@ -62,8 +42,7 @@ public class ReservationService : IReservationService
     {
         var now = DateTime.UtcNow;
 
-        // A prosumer always books for themselves; only staff may name someone
-        // else, which stops one prosumer booking in another person's name.
+      
         var prosumerNic = caller.IsStaff
             ? (request.ProsumerNic ?? string.Empty).Trim().ToUpperInvariant()
             : caller.UserId;
@@ -75,7 +54,7 @@ public class ReservationService : IReservationService
 
         EnsureTypeValid(request.Type);
 
-        // Rule: an inactive prosumer may not trade energy.
+        
         var prosumer = await _users.GetByIdAsync(prosumerNic, cancellationToken)
             ?? throw new NotFoundException($"No prosumer was found with NIC '{prosumerNic}'.");
 
@@ -100,7 +79,7 @@ public class ReservationService : IReservationService
                 ErrorCodes.SlotInactive, "This booking window is no longer available.");
         }
 
-        // Rule: an inactive station may not take bookings.
+        
         var station = await _stations.GetByIdAsync(slot.StationId, cancellationToken)
             ?? throw new NotFoundException("The station for this booking window no longer exists.");
 
@@ -110,10 +89,10 @@ public class ReservationService : IReservationService
                 ErrorCodes.StationInactive, "This station is not currently in service.");
         }
 
-        // Rule: the booking must be in the future and within seven days.
+        
         EnsureWithinBookingHorizon(slot.StartTimeUtc, now);
 
-        // One prosumer must not hold two open bookings on the same window.
+       
         if (await _reservations.ExistsActiveForProsumerAndSlotAsync(
                 prosumerNic, slot.Id, cancellationToken: cancellationToken))
         {
@@ -122,15 +101,12 @@ public class ReservationService : IReservationService
                 "You already hold a booking for this window.");
         }
 
-        // Rule: capacity. Claiming the place is a single atomic operation, so
-        // two prosumers cannot both take the last place on the slot.
+       
         var claimed = await _slots.TryClaimPlaceAsync(slot.Id, cancellationToken)
             ?? throw new ConflictException(
                 ErrorCodes.SlotFull, "This booking window is now full.");
 
-        // The identifier is generated up front so the human readable
-        // reservation number can be derived from it and stays unique without
-        // needing a separate counter collection.
+       
         var id = ObjectId.GenerateNewId();
         var reservation = new EnergyReservation
         {
@@ -148,8 +124,7 @@ public class ReservationService : IReservationService
             UpdatedAtUtc = now
         };
 
-        // If storing the booking fails after the place was taken, the place
-        // must be handed back or the slot would leak capacity for ever.
+      
         try
         {
             await _reservations.InsertAsync(reservation, cancellationToken);
@@ -169,10 +144,7 @@ public class ReservationService : IReservationService
             reservation, prosumer.FullName, station.Name);
     }
 
-    /// <summary>
-    /// Changes an existing booking, moving it to another window if asked.
-    /// </summary>
-    public async Task<ReservationSummaryResponse> UpdateAsync(
+       public async Task<ReservationSummaryResponse> UpdateAsync(
         string id,
         UpdateReservationRequest request,
         CallerContext caller,
@@ -185,9 +157,7 @@ public class ReservationService : IReservationService
         EnsureTypeValid(request.Type);
         EnsureStillOpen(reservation);
 
-        // Rule: twelve hours notice, measured against the booking as it stands
-        // now, so a prosumer cannot escape the rule by editing at the last
-        // moment and moving to a later window.
+
         EnsureChangeNoticeGiven(reservation.ReservationStartUtc, now, "changed");
 
         var movingSlot = !string.Equals(request.SlotId, reservation.SlotId, StringComparison.Ordinal);
@@ -214,7 +184,7 @@ public class ReservationService : IReservationService
                     ErrorCodes.StationInactive, "That station is not currently in service.");
             }
 
-            // The replacement window must itself satisfy the seven day rule.
+          
             EnsureWithinBookingHorizon(newSlot.StartTimeUtc, now);
 
             if (await _reservations.ExistsActiveForProsumerAndSlotAsync(
@@ -225,8 +195,7 @@ public class ReservationService : IReservationService
                     "You already hold a booking for that window.");
             }
 
-            // Take the new place before giving up the old one, so a failure
-            // never leaves the prosumer holding no booking at all.
+            
             var claimed = await _slots.TryClaimPlaceAsync(newSlot.Id, cancellationToken)
                 ?? throw new ConflictException(
                     ErrorCodes.SlotFull, "That booking window is now full.");
@@ -241,16 +210,14 @@ public class ReservationService : IReservationService
         reservation.Type = request.Type;
         reservation.UpdatedAtUtc = now;
 
-        // A changed booking is a materially different obligation for the
-        // station, so it returns to Pending for re-approval and any QR token
-        // already issued is discarded rather than left valid for the old plan.
+       
         reservation.Status = ReservationStatus.Pending;
         reservation.QrToken = null;
         reservation.QrIssuedAtUtc = null;
 
         await _reservations.ReplaceAsync(reservation, cancellationToken);
 
-        // Only once the change is safely stored is the old place released.
+        
         if (movingSlot)
         {
             await _slots.ReleasePlaceAsync(previousSlotId, cancellationToken);
@@ -264,9 +231,7 @@ public class ReservationService : IReservationService
             reservation, stationName: station?.Name);
     }
 
-    /// <summary>
-    /// Cancels a booking and returns its place to the slot.
-    /// </summary>
+   
     public async Task<ReservationSummaryResponse> CancelAsync(
         string id, CallerContext caller, CancellationToken cancellationToken = default)
     {
@@ -276,12 +241,10 @@ public class ReservationService : IReservationService
         EnsureCallerMayAct(reservation, caller);
         EnsureStillOpen(reservation);
 
-        // Rule: twelve hours notice before the window starts.
+        
         EnsureChangeNoticeGiven(reservation.ReservationStartUtc, now, "cancelled");
 
-        // The status guard lives inside the update, so a booking cancelled by
-        // somebody else a moment earlier is reported rather than cancelled
-        // twice and its slot place released twice.
+       
         var cancelled = await _reservations.TryCancelAsync(reservation.Id, now, cancellationToken)
             ?? throw new BusinessRuleViolationException(
                 ErrorCodes.ReservationAlreadyClosed,
@@ -299,9 +262,7 @@ public class ReservationService : IReservationService
             cancelled, stationName: station?.Name);
     }
 
-    /// <summary>
-    /// Approves a pending booking and issues its transaction QR token.
-    /// </summary>
+   
     public async Task<ReservationResponse> ApproveAsync(
         string id, CancellationToken cancellationToken = default)
     {
@@ -315,8 +276,7 @@ public class ReservationService : IReservationService
                 $"Only a pending booking can be approved; this one is {reservation.Status}.");
         }
 
-        // The token is signed with a server only secret, so the QR code the
-        // prosumer displays cannot be forged or edited on the device.
+        
         var token = _qrTokens.Issue(reservation.Id, reservation.ReservationStartUtc);
 
         var approved = await _reservations.TryApproveAsync(
@@ -330,9 +290,7 @@ public class ReservationService : IReservationService
         return await BuildResponseAsync(approved, cancellationToken);
     }
 
-    /// <summary>
-    /// Rejects a pending booking and returns its place to the slot.
-    /// </summary>
+   
     public async Task<ReservationResponse> RejectAsync(
         string id, CancellationToken cancellationToken = default)
     {
@@ -344,7 +302,7 @@ public class ReservationService : IReservationService
                 ErrorCodes.ReservationNotPending,
                 $"Only a pending booking can be rejected; this one is {reservation.Status}.");
 
-        // A rejected booking no longer occupies the window.
+       
         await _slots.ReleasePlaceAsync(rejected.SlotId, cancellationToken);
 
         _logger.LogInformation("Reservation {No} rejected.", rejected.ReservationNo);
@@ -352,9 +310,7 @@ public class ReservationService : IReservationService
         return await BuildResponseAsync(rejected, cancellationToken);
     }
 
-    /// <summary>
-    /// Returns one booking, subject to the ownership rules.
-    /// </summary>
+   
     public async Task<ReservationResponse> GetByIdAsync(
         string id, CallerContext caller, CancellationToken cancellationToken = default)
     {
@@ -365,9 +321,7 @@ public class ReservationService : IReservationService
         return await BuildResponseAsync(reservation, cancellationToken);
     }
 
-    /// <summary>
-    /// Searches bookings, restricting a prosumer to their own records.
-    /// </summary>
+   
     public async Task<IReadOnlyList<ReservationResponse>> SearchAsync(
         ReservationQuery query, CallerContext caller, CancellationToken cancellationToken = default)
     {
@@ -385,18 +339,14 @@ public class ReservationService : IReservationService
 
         var reservations = await _reservations.SearchAsync(query, cancellationToken);
 
-        // The display names are resolved with one query each rather than one
-        // query per row, which would otherwise make a long booking list very
-        // slow to build.
+       
         var stationNames = await LoadStationNamesAsync(reservations, cancellationToken);
         var prosumerNames = await LoadProsumerNamesAsync(reservations, cancellationToken);
 
         return reservations.ToResponseList(prosumerNames, stationNames);
     }
 
-    /// <summary>
-    /// Returns the QR payload for an approved booking.
-    /// </summary>
+   
     public async Task<QrCodeResponse> GetQrCodeAsync(
         string id, CallerContext caller, CancellationToken cancellationToken = default)
     {
@@ -404,7 +354,6 @@ public class ReservationService : IReservationService
 
         EnsureCallerMayAct(reservation, caller);
 
-        // A QR code only exists once the booking has been approved.
         if (reservation.Status != ReservationStatus.Approved
             || string.IsNullOrWhiteSpace(reservation.QrToken))
         {
@@ -421,14 +370,11 @@ public class ReservationService : IReservationService
             reservation.ReservationStartUtc);
     }
 
-    /// <summary>
-    /// Verifies a scanned QR token and returns the booking it identifies.
-    /// </summary>
+  
     public async Task<ReservationResponse> VerifyQrAsync(
         string token, CancellationToken cancellationToken = default)
     {
-        // First check the signature. A token we did not issue is rejected here
-        // without any database work at all.
+        
         var reservationId = _qrTokens.Verify(token)
             ?? throw new BusinessRuleViolationException(
                 ErrorCodes.QrInvalid, "This QR code is not valid.");
@@ -437,9 +383,7 @@ public class ReservationService : IReservationService
             ?? throw new BusinessRuleViolationException(
                 ErrorCodes.QrInvalid, "This QR code does not match any booking.");
 
-        // The signature proves the token was issued by us, but not that it is
-        // still the current one. Comparing against the stored token rejects a
-        // code that was superseded when the booking was changed or cancelled.
+      
         if (!string.Equals(reservation.QrToken, token, StringComparison.Ordinal))
         {
             throw new BusinessRuleViolationException(
@@ -464,17 +408,14 @@ public class ReservationService : IReservationService
         return await BuildResponseAsync(reservation, cancellationToken);
     }
 
-    /// <summary>
-    /// Finalises the energy transfer after a successful scan.
-    /// </summary>
+   
     public async Task<ReservationSummaryResponse> CompleteAsync(
         string id, CallerContext caller, CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
         var reservation = await GetRequiredAsync(id, cancellationToken);
 
-        // Requiring Approved inside the update is what makes the QR single
-        // use: the second scan finds nothing to update and is refused.
+        
         var completed = await _reservations.TryCompleteAsync(
                 reservation.Id, caller.UserId, now, cancellationToken)
             ?? throw new BusinessRuleViolationException(
@@ -497,11 +438,6 @@ public class ReservationService : IReservationService
             completed, stationName: station?.Name);
     }
 
-    /// <summary>
-    /// Rule: a booking must start in the future and no more than seven days
-    /// from now. Both halves are checked here so the message explains which
-    /// half was broken.
-    /// </summary>
     private static void EnsureWithinBookingHorizon(DateTime slotStartUtc, DateTime nowUtc)
     {
         if (slotStartUtc <= nowUtc)
@@ -521,10 +457,7 @@ public class ReservationService : IReservationService
         }
     }
 
-    /// <summary>
-    /// Rule: changes and cancellations need at least twelve hours notice
-    /// before the booking is due to start.
-    /// </summary>
+
     private static void EnsureChangeNoticeGiven(
         DateTime reservationStartUtc, DateTime nowUtc, string action)
     {
@@ -539,9 +472,7 @@ public class ReservationService : IReservationService
         }
     }
 
-    /// <summary>
-    /// Confirms a booking is still open, that is Pending or Approved.
-    /// </summary>
+
     private static void EnsureStillOpen(EnergyReservation reservation)
     {
         if (!ReservationStatus.Active.Contains(reservation.Status))
@@ -552,9 +483,7 @@ public class ReservationService : IReservationService
         }
     }
 
-    /// <summary>
-    /// Confirms the reservation type is one the system recognises.
-    /// </summary>
+   
     private static void EnsureTypeValid(string type)
     {
         if (!ReservationType.All.Contains(type))
@@ -565,9 +494,7 @@ public class ReservationService : IReservationService
         }
     }
 
-    /// <summary>
-    /// Confirms the caller either owns the booking or is a member of staff.
-    /// </summary>
+ 
     private static void EnsureCallerMayAct(EnergyReservation reservation, CallerContext caller)
     {
         if (caller.IsStaff)
@@ -581,19 +508,13 @@ public class ReservationService : IReservationService
         }
     }
 
-    /// <summary>
-    /// Builds the human readable booking reference from the generated
-    /// identifier, which is already unique, so no counter collection is needed.
-    /// </summary>
     private static string BuildReservationNo(ObjectId id, DateTime nowUtc)
     {
         var suffix = id.ToString()[^6..].ToUpperInvariant();
         return $"RS-{nowUtc:yyyyMMdd}-{suffix}";
     }
 
-    /// <summary>
-    /// Wraps a reservation in the summary the clients show after each action.
-    /// </summary>
+  
     private static ReservationSummaryResponse BuildSummary(
         string action,
         string message,
@@ -605,9 +526,7 @@ public class ReservationService : IReservationService
             action, message, reservation.ToResponse(prosumerName, stationName));
     }
 
-    /// <summary>
-    /// Builds a single response, resolving the station and prosumer names.
-    /// </summary>
+  
     private async Task<ReservationResponse> BuildResponseAsync(
         EnergyReservation reservation, CancellationToken cancellationToken)
     {
@@ -617,10 +536,7 @@ public class ReservationService : IReservationService
         return reservation.ToResponse(prosumer?.FullName, station?.Name);
     }
 
-    /// <summary>
-    /// Loads the names of every station referenced by a list of bookings in a
-    /// single query, avoiding one database call per row.
-    /// </summary>
+   
     private async Task<IReadOnlyDictionary<string, string>> LoadStationNamesAsync(
         IReadOnlyList<EnergyReservation> reservations, CancellationToken cancellationToken)
     {
@@ -632,8 +548,7 @@ public class ReservationService : IReservationService
             .Distinct()
             .ToList();
 
-        // The station list is small in this system, so fetching them all and
-        // filtering in memory is cheaper than one query per identifier.
+   
         if (stationIds.Count == 0)
         {
             return names;
@@ -649,11 +564,7 @@ public class ReservationService : IReservationService
         return names;
     }
 
-    /// <summary>
-    /// Loads the names of every prosumer referenced by a list of bookings in a
-    /// single query, so the booking list can show who each booking belongs to
-    /// without issuing one lookup per row.
-    /// </summary>
+  
     private async Task<IReadOnlyDictionary<string, string>> LoadProsumerNamesAsync(
         IReadOnlyList<EnergyReservation> reservations, CancellationToken cancellationToken)
     {
@@ -670,9 +581,7 @@ public class ReservationService : IReservationService
             return names;
         }
 
-        // One query for every prosumer, then filtered in memory. The prosumer
-        // list in this system is small enough that this is cheaper than a
-        // separate lookup for each distinct NIC on the page.
+      
         var prosumers = await _users.ListAsync(
             role: UserRoles.Prosumer, cancellationToken: cancellationToken);
 
@@ -684,9 +593,6 @@ public class ReservationService : IReservationService
         return names;
     }
 
-    /// <summary>
-    /// Loads a reservation and throws a not found error when it is missing.
-    /// </summary>
     private async Task<EnergyReservation> GetRequiredAsync(
         string id, CancellationToken cancellationToken)
     {
@@ -694,9 +600,7 @@ public class ReservationService : IReservationService
             ?? throw new NotFoundException($"No booking was found with identifier '{id}'.");
     }
 
-    /// <summary>
-    /// Loads a booking window and throws a not found error when it is missing.
-    /// </summary>
+ 
     private async Task<EnergyBookingSlot> GetRequiredSlotAsync(
         string slotId, CancellationToken cancellationToken)
     {
