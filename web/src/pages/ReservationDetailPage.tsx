@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/ReservationDetailPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Full record of a single booking, its lifecycle timestamps and
-//               the actions still available on it. Also carries the operator
-//               tool for verifying a scanned prosumer QR code against the
-//               service and finalising the energy transfer.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { reservationsApi } from '../api/resources'
@@ -34,9 +23,7 @@ export default function ReservationDetailPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
 
-  /**
-   * Loads the booking.
-   */
+ 
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -54,9 +41,7 @@ export default function ReservationDetailPage() {
     void load()
   }, [load])
 
-  /**
-   * Runs one of the lifecycle actions and reports the service's response.
-   */
+
   async function runAction(action: 'approve' | 'reject' | 'cancel' | 'complete') {
     if (!reservation) return
 
@@ -197,8 +182,7 @@ export default function ReservationDetailPage() {
                 </button>
               )}
 
-              {/* Availability comes from the service, which applies the twelve
-                  hour notice rule. */}
+             
               {reservation.canBeCancelled ? (
                 <button
                   type="button"
@@ -232,21 +216,14 @@ export default function ReservationDetailPage() {
   )
 }
 
-/**
- * Operator tool for checking a scanned prosumer QR code.
- *
- * The token is sent to the service, which validates its signature and the state
- * of the booking. Nothing about the code is trusted on this side.
- */
+
 function QrVerificationPanel({ onVerified }: { onVerified: () => void }) {
   const [token, setToken] = useState('')
   const [result, setResult] = useState<Reservation | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
 
-  /**
-   * Sends the scanned token to the service for verification.
-   */
+ 
   async function handleVerify() {
     setIsBusy(true)
     setError(null)
@@ -255,17 +232,14 @@ function QrVerificationPanel({ onVerified }: { onVerified: () => void }) {
     try {
       setResult(await reservationsApi.verifyQr(token.trim()))
     } catch (caught) {
-      // Covers a forged code, one that has been superseded, and one that has
-      // already been used, each with the service's own message.
+      
       setError(caught instanceof ApiError ? caught.message : 'Could not verify the QR code.')
     } finally {
       setIsBusy(false)
     }
   }
 
-  /**
-   * Finalises the transfer for the booking the scan identified.
-   */
+ 
   async function handleComplete() {
     if (!result) return
 
@@ -314,8 +288,7 @@ function QrVerificationPanel({ onVerified }: { onVerified: () => void }) {
         </button>
 
         {result && (
-          /* The status pair is used rather than a literal green, so the panel
-             stays readable when the dark theme is on. */
+        
           <div className="rounded-xl bg-success-bg p-3.5 text-success-fg">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <IconCheck className="h-4 w-4" />

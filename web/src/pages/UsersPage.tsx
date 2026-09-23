@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/UsersPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Back-office administration of the two web application roles,
-//               Backoffice and Grid Operator. The whole page is restricted to
-//               back-office officers, and the service refuses these calls from
-//               any other role regardless of what the browser allows.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { usersApi } from '../api/resources'
@@ -53,10 +42,7 @@ export default function UsersPage() {
   const [form, setForm] = useState(BLANK_FORM)
   const [isSaving, setIsSaving] = useState(false)
 
-  /**
-   * Loads the staff accounts. Prosumers are excluded because they are managed
-   * on their own screen, keyed by NIC.
-   */
+
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -79,9 +65,7 @@ export default function UsersPage() {
     void load()
   }, [load])
 
-  /**
-   * Creates a Backoffice or Grid Operator account.
-   */
+ 
   async function handleCreate(event: FormEvent) {
     event.preventDefault()
     setIsSaving(true)
@@ -100,9 +84,6 @@ export default function UsersPage() {
     }
   }
 
-  /**
-   * Activates or deactivates a staff account.
-   */
   async function handleToggleActive(target: User) {
     setError(null)
     setNotice(null)
@@ -234,8 +215,7 @@ export default function UsersPage() {
                       <ActiveBadge isActive={u.isActive} />
                     </td>
                     <td className="text-right">
-                      {/* Deactivating your own account would immediately lock
-                          you out, so the option is withheld. */}
+                      
                       {u.id !== currentUser?.id && (
                         <button
                           type="button"
