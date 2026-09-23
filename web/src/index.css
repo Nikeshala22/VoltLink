@@ -1,33 +1,13 @@
-/* -----------------------------------------------------------------------------
-   File        : index.css
-   Project     : VoltLink Web - Smart Solar Microgrid Trading System
-   Description : Global styling and the light and dark themes.
-
-                 Colours are declared once as CSS variables and mapped onto
-                 Tailwind utilities. The "ink" scale is deliberately semantic
-                 rather than literal: ink-50 always means the subtlest surface
-                 and ink-900 always means the strongest text, so the same
-                 markup reads correctly in both themes and the whole palette
-                 inverts by swapping one class on the html element.
-   Author      : <IT Number - Member Name>
-   Created     : 2026-09-03
-   ----------------------------------------------------------------------------- */
-
 @import "tailwindcss";
 
-/* Dark mode is driven by a class rather than the media query alone, so the
-   user's own choice can override what their operating system reports. */
+
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ---------------------------------------------------------------------------
-   Light theme (default)
-   --------------------------------------------------------------------------- */
+
 :root {
   color-scheme: light;
 
-  /* Semantic neutral ramp: 50 is furthest from the text, 900 is the text.
-     The ramp carries a slight violet cast so neutrals sit beside the brand
-     colour rather than fighting it. */
+  
   --c-ink-50: #fafaff;
   --c-ink-100: #f3f3fb;
   --c-ink-200: #e8e8f4;
@@ -39,8 +19,7 @@
   --c-ink-800: #24263a;
   --c-ink-900: #14162a;
 
-  /* Panels and page background. The canvas is a touch darker than the cards
-     so a panel reads as lifted without needing a heavy shadow. */
+  
   --c-canvas: #f5f6fc;
   --c-surface: #ffffff;
   --c-surface-2: #f7f7fd;
@@ -48,7 +27,7 @@
   --c-border: #e7e8f4;
   --c-border-strong: #d6d8ea;
 
-  /* Brand: indigo-violet, the colour of the link between producer and consumer. */
+  
   --c-brand-50: #f1f1fe;
   --c-brand-100: #e4e4fd;
   --c-brand-200: #cdcdfb;
@@ -60,13 +39,13 @@
   --c-brand-soft: #eceafe;
   --c-brand-soft-fg: #4338ca;
 
-  /* Accent: cyan, reserved for energy figures and live data. */
+  
   --c-accent-500: #06b6d4;
   --c-accent-600: #0891b2;
   --c-accent-soft: #d9f6fc;
   --c-accent-soft-fg: #0e6f85;
 
-  /* Status pairs */
+
   --c-success-bg: #dcfce7;
   --c-success-fg: #15803d;
   --c-warn-bg: #fef3c7;
@@ -83,12 +62,11 @@
   --c-danger: #e11d48;
   --c-success: #059669;
 
-  /* Text drawn on top of those solid fills. */
+  
   --c-danger-on: #ffffff;
   --c-success-on: #ffffff;
 
-  /* Ambient wash painted behind the shell. Two soft brand-tinted blooms give
-     the page depth without any image to download. */
+  
   --c-glow-a: rgb(99 102 241 / 0.14);
   --c-glow-b: rgb(6 182 212 / 0.12);
 
@@ -98,12 +76,7 @@
   --shadow-brand: 0 6px 16px rgb(79 70 229 / 0.28);
 }
 
-/* ---------------------------------------------------------------------------
-   Dark theme
-   The neutral ramp is inverted so ink-900 remains the text colour and ink-50
-   remains the quietest surface. Surfaces are lifted rather than pure black,
-   which keeps large panels comfortable to read for long periods.
-   --------------------------------------------------------------------------- */
+
 .dark {
   color-scheme: dark;
 
@@ -125,7 +98,7 @@
   --c-border: #242841;
   --c-border-strong: #363b58;
 
-  /* Indigo is lightened so it keeps its contrast on dark panels. */
+ 
   --c-brand-50: #1a1a3d;
   --c-brand-100: #232352;
   --c-brand-200: #2f2f6b;
@@ -142,8 +115,7 @@
   --c-accent-soft: #0b3b46;
   --c-accent-soft-fg: #7dd8ea;
 
-  /* Status pairs are muted backgrounds with bright text, which reads far
-     better on a dark panel than the light theme's pale fills. */
+
   --c-success-bg: #08331f;
   --c-success-fg: #6ee7b7;
   --c-warn-bg: #3a2a06;
@@ -160,9 +132,7 @@
   --c-danger: #fb7185;
   --c-success: #34d399;
 
-  /* The fills above are light so they stand out on a dark panel, which means
-     white text on them would be far too low contrast. Dark text is used
-     instead, giving well over the 4.5:1 the guidelines ask for. */
+  
   --c-danger-on: #3f0d18;
   --c-success-on: #05271a;
 
@@ -175,11 +145,7 @@
   --shadow-brand: 0 6px 18px rgb(99 102 241 / 0.4);
 }
 
-/* ---------------------------------------------------------------------------
-   Map the variables onto Tailwind utilities.
-   "inline" makes each utility reference the variable itself, so switching the
-   theme class repaints without rebuilding any CSS.
-   --------------------------------------------------------------------------- */
+
 @theme inline {
   --color-ink-50: var(--c-ink-50);
   --color-ink-100: var(--c-ink-100);
@@ -234,18 +200,14 @@
   --color-success-on: var(--c-success-on);
 }
 
-/* ---------------------------------------------------------------------------
-   Base
-   --------------------------------------------------------------------------- */
+
 html,
 body,
 #root {
   height: 100%;
 }
 
-/* The background is set on the root element as well as the body. The browser
-   propagates the root element's background to the whole page canvas, so the
-   area revealed by overscrolling matches the theme instead of staying white. */
+
 html {
   background-color: var(--c-canvas);
 }
@@ -257,18 +219,17 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
 
-  /* Eases the change when the theme is switched, rather than snapping. */
+  
   transition: background-color 180ms ease, color 180ms ease;
 }
 
-/* Figures are set in tabular numerals so a column of values lines up on the
-   decimal point instead of drifting from row to row. */
+
 .numeric {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 
-/* Respect a reader who has asked for less motion. */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -278,13 +239,13 @@ body {
   }
 }
 
-/* A visible focus ring for keyboard users, without adding one for mouse clicks. */
+
 :focus-visible {
   outline: 2px solid var(--c-brand-500);
   outline-offset: 2px;
 }
 
-/* A slimmer scrollbar that follows the theme instead of staying light. */
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--c-ink-300) transparent;
@@ -302,15 +263,9 @@ body {
   background-clip: content-box;
 }
 
-/* ---------------------------------------------------------------------------
-   Reusable component classes
-   Defined once so buttons, inputs, cards and tables look the same on every
-   screen and pick up both themes without each page repeating the colours.
-   --------------------------------------------------------------------------- */
+
 @layer components {
-  /* The shared button shape is applied through a grouped selector. Tailwind
-     only lets @apply reference real utilities, not other custom classes, so
-     composing with "@apply btn" inside each variant would fail to build. */
+
   .btn,
   .btn-primary,
   .btn-secondary,
@@ -324,15 +279,13 @@ body {
            disabled:pointer-events-none disabled:opacity-45;
   }
 
-  /* The primary action is a solid brand fill lifted by a coloured shadow, so
-     the one thing the screen wants you to do is unmistakable. */
+  
   .btn-primary {
     @apply bg-brand-600 text-brand-fg hover:bg-brand-500;
     box-shadow: var(--shadow-brand);
   }
 
-  /* Secondary actions sit on a tinted surface rather than a bordered white
-     box, which keeps a row of buttons quiet next to the primary one. */
+ 
   .btn-secondary {
     @apply border border-line bg-surface-2 text-ink-700 hover:border-line-strong hover:bg-surface-3 hover:text-ink-900;
   }
@@ -381,9 +334,7 @@ body {
     @apply flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6;
   }
 
-  /* The eyebrow rule under a panel header is drawn as a gradient that fades
-     out, which separates the header from the content more gently than a
-     full width line. */
+
   .card-header + * {
     @apply border-t border-line;
   }
@@ -392,8 +343,7 @@ body {
     @apply text-[15px] font-semibold tracking-tight text-ink-900;
   }
 
-  /* Tables. Wide tables scroll inside their own container so the page itself
-     never scrolls sideways on a narrow screen. */
+
   .table-wrap {
     @apply w-full overflow-x-auto;
   }
@@ -423,8 +373,7 @@ body {
     @apply bg-surface-2;
   }
 
-  /* Labels. A badge carries a leading dot so its status is legible even where
-     the fill colour is hard to tell apart at a glance. */
+  
   .badge {
     @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full
            px-2.5 py-1 text-xs font-medium;
@@ -445,14 +394,12 @@ body {
     @apply border-brand-500/30 bg-brand-soft text-brand-soft-fg hover:bg-brand-soft hover:text-brand-soft-fg;
   }
 
-  /* Placeholder blocks shown while a request is in flight. */
+  
   .skeleton {
     @apply animate-pulse rounded-lg bg-ink-200;
   }
 
-  /* The soft ambient wash behind the application shell and the sign in screen.
-     Two blurred blooms, painted with a pseudo element so no extra markup is
-     needed and the effect never intercepts a click. */
+  
   .aurora {
     position: relative;
     isolation: isolate;

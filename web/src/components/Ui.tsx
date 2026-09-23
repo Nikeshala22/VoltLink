@@ -1,13 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : components/Ui.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Small presentational building blocks shared by every screen:
-//               status badges, page headers, toolbars, empty and loading
-//               states, alerts, statistic tiles and a modal dialog.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -22,12 +12,9 @@ import {
   IconSearch,
 } from './Icons'
 
-/* -------------------------------------------------------------------------- */
-/* Status badges                                                              */
-/* -------------------------------------------------------------------------- */
 
-// Each reservation status gets its own colour so a long list can be scanned at
-// a glance rather than read word by word.
+
+
 const RESERVATION_STATUS_STYLES: Record<ReservationStatus, string> = {
   Pending: 'bg-warn-bg text-warn-fg',
   Approved: 'bg-info-bg text-info-fg',
@@ -36,7 +23,7 @@ const RESERVATION_STATUS_STYLES: Record<ReservationStatus, string> = {
   Rejected: 'bg-danger-bg text-danger-fg',
 }
 
-/** Coloured label for a reservation status. */
+
 export function StatusBadge({ status }: { status: ReservationStatus }) {
   return (
     <span className={`badge ${RESERVATION_STATUS_STYLES[status]}`}>
@@ -52,9 +39,9 @@ const ROLE_STYLES: Record<UserRole, string> = {
   Prosumer: 'bg-success-bg text-success-fg',
 }
 
-/** Coloured label for a user role. */
+
 export function RoleBadge({ role }: { role: UserRole }) {
-  // The stored value is one word; a space makes "Grid Operator" read properly.
+  
   const label = role === 'GridOperator' ? 'Grid Operator' : role
 
   return (
@@ -65,7 +52,7 @@ export function RoleBadge({ role }: { role: UserRole }) {
   )
 }
 
-/** Green or grey label showing whether an account or station is active. */
+
 export function ActiveBadge({ isActive }: { isActive: boolean }) {
   return (
     <span
@@ -77,22 +64,13 @@ export function ActiveBadge({ isActive }: { isActive: boolean }) {
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/* Page furniture                                                             */
-/* -------------------------------------------------------------------------- */
 
-/** One step in the trail above a page title. */
 export interface Crumb {
   label: string
   to?: string
 }
 
-/**
- * Title, optional description and an action area at the top of a page.
- *
- * An optional breadcrumb trail sits above the title so a detail screen says
- * where it came from without each page having to draw its own back link.
- */
+
 export function PageHeader({
   title,
   description,
@@ -147,7 +125,7 @@ export function PageHeader({
   )
 }
 
-/** Link back to a listing page, shown at the top of the detail screens. */
+
 export function BackLink({ to, children }: { to: string; children: ReactNode }) {
   return (
     <Link
@@ -160,12 +138,7 @@ export function BackLink({ to, children }: { to: string; children: ReactNode }) 
   )
 }
 
-/**
- * A search box with the magnifier drawn inside it.
- *
- * Used by every listing screen, so the filter control looks and behaves the
- * same wherever a list can be narrowed down.
- */
+
 export function SearchInput({
   value,
   onChange,
@@ -192,7 +165,7 @@ export function SearchInput({
   )
 }
 
-/** A row of filter pills. */
+
 export function FilterChips<T extends string>({
   options,
   value,
@@ -219,13 +192,7 @@ export function FilterChips<T extends string>({
   )
 }
 
-/**
- * A headline figure.
- *
- * The accent bar down the left edge carries the tone, which keeps the tile
- * itself on the same surface as every other panel instead of turning the top
- * of the dashboard into four blocks of flat colour.
- */
+
 export function StatTile({
   label,
   value,
@@ -240,9 +207,7 @@ export function StatTile({
   tone: 'brand' | 'accent' | 'success' | 'warn'
   icon?: ReactNode
 
-  // Set for a tile whose value is a phrase rather than a number, such as a
-  // time range. At the full display size those wrap onto a second line and
-  // make the tile taller than the ones beside it.
+ 
   compact?: boolean
 }) {
   const tones = {
@@ -258,11 +223,7 @@ export function StatTile({
 
       <div className="flex items-start justify-between gap-3 pl-2">
         <div className="min-w-0">
-          {/* The label is given the height of two lines whether it needs them
-              or not. A tile whose label wraps would otherwise push its figure
-              lower than the tiles beside it, and a row of headline numbers
-              that do not share a baseline is the first thing the eye picks
-              up on the dashboard. */}
+          
           <p className="flex min-h-8 items-start text-xs font-medium uppercase tracking-wide text-ink-500">
             {label}
           </p>
@@ -288,7 +249,7 @@ export function StatTile({
   )
 }
 
-/** A label and value pair, used by the detail screens. */
+
 export function DetailRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line py-3 last:border-b-0">
@@ -298,7 +259,7 @@ export function DetailRow({ label, children }: { label: string; children: ReactN
   )
 }
 
-/** Placeholder shown while a request is in flight. */
+
 export function Loading({ label = 'Loading…' }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-20 text-sm text-ink-500">
@@ -311,7 +272,7 @@ export function Loading({ label = 'Loading…' }: { label?: string }) {
   )
 }
 
-/** Placeholder shown when a list has no rows. */
+
 export function EmptyState({
   title,
   hint,
@@ -336,10 +297,6 @@ export function EmptyState({
   )
 }
 
-/**
- * Message banner. Errors carry the wording the API sent back, so the reason a
- * request was refused is always the server's own explanation.
- */
 export function Alert({
   kind,
   message,
@@ -349,8 +306,7 @@ export function Alert({
   message: string
   onDismiss?: () => void
 }) {
-  // Each banner uses the same status pair as the badges, so a failure looks
-  // the same wherever it is reported and both themes are covered at once.
+ 
   const { styles, icon } = {
     error: { styles: 'bg-danger-bg text-danger-fg', icon: <IconAlert className="h-4 w-4" /> },
     success: { styles: 'bg-success-bg text-success-fg', icon: <IconCheck className="h-4 w-4" /> },
@@ -379,13 +335,7 @@ export function Alert({
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/* Modal dialog                                                               */
-/* -------------------------------------------------------------------------- */
 
-/**
- * Centred dialog used for the create and edit forms.
- */
 export function Modal({
   title,
   description,
@@ -401,7 +351,7 @@ export function Modal({
   children: ReactNode
   footer?: ReactNode
 }) {
-  // Escape closes the dialog, which is what any keyboard user will try first.
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -413,8 +363,7 @@ export function Modal({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isOpen, onClose])
 
-  // The page behind a dialog must not scroll, or a trackpad gesture over the
-  // backdrop moves the list instead of the form the reader is looking at.
+  
   useEffect(() => {
     if (!isOpen) return
 
@@ -467,15 +416,7 @@ export function Modal({
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/* Formatting helpers                                                         */
-/* -------------------------------------------------------------------------- */
 
-/**
- * Renders a UTC timestamp from the API in the reader's local time.
- * The API stores and returns UTC throughout; conversion happens only here, at
- * the very edge of the system.
- */
 export function formatDateTime(utc: string | null | undefined): string {
   if (!utc) return '—'
 
@@ -491,7 +432,7 @@ export function formatDateTime(utc: string | null | undefined): string {
   })
 }
 
-/** Renders just the date part of a UTC timestamp in local time. */
+
 export function formatDate(utc: string | null | undefined): string {
   if (!utc) return '—'
 

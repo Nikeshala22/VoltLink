@@ -1,30 +1,9 @@
-// -----------------------------------------------------------------------------
-// File        : components/Icons.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : The line icon set used across the console.
-//
-//               The icons are drawn inline as SVG rather than pulled from an
-//               icon font or a package. Nothing extra has to be downloaded
-//               before the first paint, every glyph inherits the surrounding
-//               text colour through "currentColor", and the set stays small
-//               because only the symbols this application actually uses are
-//               defined here.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import type { SVGProps } from 'react'
 
-/** Shared props. Callers size an icon with a Tailwind class, e.g. "h-4 w-4". */
+
 type IconProps = SVGProps<SVGSVGElement>
 
-/**
- * Common attributes for every glyph in the set.
- *
- * The icons are decorative wherever they sit beside a text label, so they are
- * hidden from assistive technology by default; a caller that uses an icon on
- * its own passes its own aria-label and overrides this.
- */
+
 function base(props: IconProps) {
   return {
     viewBox: '0 0 24 24',
@@ -38,17 +17,7 @@ function base(props: IconProps) {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Brand                                                                      */
-/* -------------------------------------------------------------------------- */
 
-/**
- * The VoltLink mark: a bolt formed inside a linked hexagonal cell, standing
- * for energy moving between connected nodes of the microgrid.
- *
- * It is filled rather than stroked so it stays legible at the small sizes used
- * in the navigation and the browser tab.
- */
 export function LogoMark({ className = 'h-5 w-5' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
@@ -64,11 +33,7 @@ export function LogoMark({ className = 'h-5 w-5' }: { className?: string }) {
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/* Navigation                                                                 */
-/* -------------------------------------------------------------------------- */
 
-/** Dashboard: a panel split into tiles. */
 export function IconDashboard(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -80,7 +45,7 @@ export function IconDashboard(props: IconProps) {
   )
 }
 
-/** Microgrid node: a hub with three connected spurs. */
+
 export function IconNode(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -93,7 +58,7 @@ export function IconNode(props: IconProps) {
   )
 }
 
-/** Reservation: energy moving in both directions between two parties. */
+
 export function IconExchange(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -102,7 +67,7 @@ export function IconExchange(props: IconProps) {
   )
 }
 
-/** Prosumer: the sun, for a household that generates its own power. */
+
 export function IconSolar(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -112,7 +77,7 @@ export function IconSolar(props: IconProps) {
   )
 }
 
-/** Pending activation: an inbox awaiting a decision. */
+
 export function IconInbox(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -122,7 +87,7 @@ export function IconInbox(props: IconProps) {
   )
 }
 
-/** System users: a person beside a cog. */
+
 export function IconUsers(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -134,11 +99,7 @@ export function IconUsers(props: IconProps) {
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/* Actions and states                                                         */
-/* -------------------------------------------------------------------------- */
 
-/** Menu: opens the navigation drawer on a small screen. */
 export function IconMenu(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -147,7 +108,7 @@ export function IconMenu(props: IconProps) {
   )
 }
 
-/** Close. */
+
 export function IconClose(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -156,7 +117,7 @@ export function IconClose(props: IconProps) {
   )
 }
 
-/** Search. */
+
 export function IconSearch(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -166,7 +127,7 @@ export function IconSearch(props: IconProps) {
   )
 }
 
-/** Refresh. */
+
 export function IconRefresh(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -185,7 +146,7 @@ export function IconPlus(props: IconProps) {
   )
 }
 
-/** Sign out. */
+
 export function IconLogout(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -195,7 +156,7 @@ export function IconLogout(props: IconProps) {
   )
 }
 
-/** Chevron pointing left, used by the back links. */
+
 export function IconChevronLeft(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -204,7 +165,7 @@ export function IconChevronLeft(props: IconProps) {
   )
 }
 
-/** Chevron pointing right, used by the breadcrumb separators. */
+
 export function IconChevronRight(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -213,7 +174,7 @@ export function IconChevronRight(props: IconProps) {
   )
 }
 
-/** Sun, for the light theme. */
+
 export function IconSun(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -223,7 +184,6 @@ export function IconSun(props: IconProps) {
   )
 }
 
-/** Moon, for the dark theme. */
 export function IconMoon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -232,7 +192,7 @@ export function IconMoon(props: IconProps) {
   )
 }
 
-/** Monitor, for following the operating system. */
+
 export function IconMonitor(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -242,7 +202,7 @@ export function IconMonitor(props: IconProps) {
   )
 }
 
-/** Warning triangle, used by the error banner. */
+
 export function IconAlert(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -252,7 +212,7 @@ export function IconAlert(props: IconProps) {
   )
 }
 
-/** Tick in a circle, used by the success banner. */
+
 export function IconCheck(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -262,7 +222,7 @@ export function IconCheck(props: IconProps) {
   )
 }
 
-/** Letter "i" in a circle, used by the informational banner. */
+
 export function IconInfo(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -272,7 +232,7 @@ export function IconInfo(props: IconProps) {
   )
 }
 
-/** Bolt, used wherever an energy figure is shown. */
+
 export function IconBolt(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -281,7 +241,7 @@ export function IconBolt(props: IconProps) {
   )
 }
 
-/** Clock, used by the scheduling figures. */
+
 export function IconClock(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -291,7 +251,7 @@ export function IconClock(props: IconProps) {
   )
 }
 
-/** Map pin, used by the location details. */
+
 export function IconPin(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -301,7 +261,7 @@ export function IconPin(props: IconProps) {
   )
 }
 
-/** Battery, used by the storage figures. */
+
 export function IconBattery(props: IconProps) {
   return (
     <svg {...base(props)}>

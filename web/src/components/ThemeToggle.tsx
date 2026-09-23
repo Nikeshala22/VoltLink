@@ -1,12 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : components/ThemeToggle.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Three way switch between the light theme, the dark theme and
-//               following the operating system.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useTheme } from '../context/useTheme'
 import type { ThemePreference } from '../context/ThemeContext'
 import { IconMonitor, IconMoon, IconSun } from './Icons'
@@ -24,10 +15,7 @@ const OPTIONS: Option[] = [
   { value: 'system', label: 'Match system', Icon: IconMonitor },
 ]
 
-/**
- * A small segmented control. Showing all three choices at once makes the
- * current setting obvious, which a single cycling button does not.
- */
+
 export default function ThemeToggle() {
   const { preference, setPreference } = useTheme()
 

@@ -1,13 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : api/resources.ts
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : One typed function per Web API endpoint the back-office uses.
-//               These are thin wrappers on purpose: no decisions are made here,
-//               they only describe which endpoint a screen is calling.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { api, buildQuery } from './client'
 import type {
   LoginResponse,
@@ -20,22 +10,16 @@ import type {
   User,
 } from '../types'
 
-/* -------------------------------------------------------------------------- */
-/* Authentication                                                             */
-/* -------------------------------------------------------------------------- */
 
 export const authApi = {
-  /** Signs in and returns the token plus the caller's profile. */
+  
   login: (email: string, password: string) =>
     api.post<LoginResponse>('/auth/login', { email, password }),
 
-  /** Restores the session on page load using the stored token. */
+  
   me: () => api.get<User>('/auth/me'),
 }
 
-/* -------------------------------------------------------------------------- */
-/* Staff accounts                                                             */
-/* -------------------------------------------------------------------------- */
 
 export interface CreateStaffUserPayload {
   fullName: string
@@ -66,9 +50,6 @@ export const usersApi = {
   deactivate: (id: string) => api.patch<User>(`/users/${id}/deactivate`),
 }
 
-/* -------------------------------------------------------------------------- */
-/* Prosumers                                                                  */
-/* -------------------------------------------------------------------------- */
 
 export interface CreateProsumerPayload {
   nic: string
@@ -84,10 +65,10 @@ export const prosumersApi = {
   list: (filters: { isActive?: boolean; search?: string } = {}) =>
     api.get<User[]>(`/prosumers${buildQuery(filters)}`),
 
-  /** Prosumers who have registered from the mobile app and await activation. */
+  
   pending: () => api.get<User[]>('/prosumers/pending'),
 
-  /** Prosumers who have asked for their account to be closed. */
+
   deactivationRequests: () => api.get<User[]>('/prosumers/deactivation-requests'),
 
   get: (nic: string) => api.get<User>(`/prosumers/${nic}`),
@@ -102,9 +83,6 @@ export const prosumersApi = {
   deactivate: (nic: string) => api.patch<User>(`/prosumers/${nic}/deactivate`),
 }
 
-/* -------------------------------------------------------------------------- */
-/* Stations and booking windows                                               */
-/* -------------------------------------------------------------------------- */
 
 export interface StationPayload {
   code?: string
@@ -134,7 +112,7 @@ export const stationsApi = {
 
   get: (id: string) => api.get<Station>(`/stations/${id}`),
 
-  /** Server side geographic search; the distance is calculated by MongoDB. */
+  
   nearby: (lat: number, lng: number, radiusKm = 10, limit = 50) =>
     api.get<NearbyStation[]>(`/stations/nearby${buildQuery({ lat, lng, radiusKm, limit })}`),
 
@@ -144,7 +122,7 @@ export const stationsApi = {
 
   activate: (id: string) => api.patch<Station>(`/stations/${id}/activate`),
 
-  /** Refused by the API while the station holds active reservations. */
+  
   deactivate: (id: string) => api.patch<Station>(`/stations/${id}/deactivate`),
 
   updateBatterySlots: (id: string, availableBatterySlots: number) =>
@@ -162,13 +140,9 @@ export const slotsApi = {
 
   update: (id: string, payload: SlotPayload) => api.put<Slot>(`/slots/${id}`, payload),
 
-  /** Refused by the API while prosumers hold reservations against the window. */
+  
   remove: (id: string) => api.del<void>(`/slots/${id}`),
 }
-
-/* -------------------------------------------------------------------------- */
-/* Reservations                                                               */
-/* -------------------------------------------------------------------------- */
 
 export interface ReservationFilters {
   nic?: string
@@ -200,17 +174,14 @@ export const reservationsApi = {
 
   reject: (id: string) => api.patch<Reservation>(`/reservations/${id}/reject`),
 
-  /** Used by an operator after scanning a prosumer QR code. */
+ 
   verifyQr: (token: string) => api.post<Reservation>('/reservations/verify-qr', { token }),
 
   complete: (id: string) => api.post<ReservationSummary>(`/reservations/${id}/complete`),
 }
 
-/* -------------------------------------------------------------------------- */
-/* Dashboard                                                                  */
-/* -------------------------------------------------------------------------- */
 
 export const dashboardApi = {
-  /** Counts for staff, computed entirely by the server. */
+ 
   operator: () => api.get<OperatorDashboard>('/dashboard/operator'),
 }

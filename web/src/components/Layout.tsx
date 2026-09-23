@@ -1,20 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : components/Layout.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Application shell: the branded navigation panel, the links
-//               filtered by the signed in role, the theme switch and the
-//               account menu.
-//
-//               The panel floats inside the page rather than running edge to
-//               edge, which keeps the ambient background visible around it and
-//               lets the content sit on its own rounded surface. It is
-//               permanent from the large breakpoint upwards and becomes a
-//               slide over drawer below it, so the same markup works from a
-//               phone to a desktop.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useEffect, useRef, useState } from 'react'
 import type { ComponentType, SVGProps } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -40,8 +23,7 @@ interface NavItem {
   label: string
   Icon: ComponentType<SVGProps<SVGSVGElement>>
 
-  // Which roles may see the link. The API enforces the same restriction, so
-  // hiding a link is a convenience, never the actual protection.
+  
   roles: UserRole[]
 }
 
@@ -50,8 +32,7 @@ interface NavGroup {
   items: NavItem[]
 }
 
-// Grouping separates the day to day operational screens from the account
-// administration ones, which only a back-office officer ever sees.
+
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: 'Operations',
@@ -91,7 +72,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ]
 
-/** Turns a full name into up to two initials, standing in for an avatar. */
+
 function initialsOf(fullName: string | undefined): string {
   return (fullName ?? '')
     .split(' ')
@@ -110,15 +91,13 @@ export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Close the drawer whenever the route changes, so tapping a link on a phone
-  // does not leave the panel covering the page that just loaded.
+  
   useEffect(() => {
     setIsDrawerOpen(false)
     setIsMenuOpen(false)
   }, [location.pathname])
 
-  // Escape closes whichever overlay is open, which is what any keyboard user
-  // will try first.
+  
   useEffect(() => {
     if (!isDrawerOpen && !isMenuOpen) return
 
@@ -132,8 +111,7 @@ export default function Layout() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isDrawerOpen, isMenuOpen])
 
-  // A click anywhere outside the account menu dismisses it, which is how every
-  // other menu on the platform behaves.
+  
   useEffect(() => {
     if (!isMenuOpen) return
 
@@ -152,8 +130,7 @@ export default function Layout() {
     navigate('/login', { replace: true })
   }
 
-  // Only the groups that still hold a link this role may use are drawn, so an
-  // operator never sees an empty "Administration" heading.
+  
   const groups = NAV_GROUPS.map((group) => ({
     ...group,
     items: group.items.filter((item) => user && item.roles.includes(user.role)),
@@ -162,8 +139,7 @@ export default function Layout() {
   const initials = initialsOf(user?.fullName)
   const roleLabel = user?.role === 'GridOperator' ? 'Grid Operator' : (user?.role ?? '')
 
-  // The heading in the top bar names the screen currently on show, which the
-  // route table alone cannot tell the header.
+ 
   const currentLabel =
     NAV_GROUPS.flatMap((group) => group.items).find((item) =>
       location.pathname.startsWith(item.to),
@@ -171,7 +147,7 @@ export default function Layout() {
 
   return (
     <div className="aurora flex min-h-full">
-      {/* Dimmed backdrop, only present while the drawer is open on small screens. */}
+    
       {isDrawerOpen && (
         <button
           type="button"
@@ -200,8 +176,7 @@ export default function Layout() {
             <p className="truncate text-[11px] text-ink-400">Microgrid Console</p>
           </div>
 
-          {/* Only useful while the panel is a drawer; the permanent panel has
-              nothing to close. */}
+        
           <button
             type="button"
             onClick={() => setIsDrawerOpen(false)}
@@ -235,8 +210,7 @@ export default function Layout() {
                   >
                     {({ isActive }) => (
                       <>
-                        {/* A short bar on the active row, so the current screen
-                            is readable without relying on colour alone. */}
+                       
                         <span
                           aria-hidden="true"
                           className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-500 transition-opacity ${
@@ -349,7 +323,7 @@ export default function Layout() {
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
-          {/* Capped so long tables stay readable on a very wide monitor. */}
+         
           <div className="mx-auto w-full max-w-[88rem]">
             <Outlet />
           </div>
