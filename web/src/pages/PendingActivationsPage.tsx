@@ -1,15 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/PendingActivationsPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : The pending activation view required by the specification.
-//               Prosumers who register from the mobile application arrive
-//               inactive and cannot sign in until a back-office officer
-//               approves them here. Outstanding account closure requests are
-//               shown alongside, because only this role may act on them.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import { prosumersApi } from '../api/resources'
 import { ApiError } from '../api/client'
@@ -26,10 +14,6 @@ export default function PendingActivationsPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
 
-  /**
-   * Loads both queues together, since a back-office officer works through them
-   * at the same time.
-   */
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -53,9 +37,6 @@ export default function PendingActivationsPage() {
     void load()
   }, [load])
 
-  /**
-   * Approves a registration so the prosumer can sign in on the mobile app.
-   */
   async function handleActivate(prosumer: User) {
     setBusyId(prosumer.id)
     setError(null)
@@ -72,9 +53,7 @@ export default function PendingActivationsPage() {
     }
   }
 
-  /**
-   * Carries out an account closure the prosumer asked for.
-   */
+ 
   async function handleDeactivate(prosumer: User) {
     setBusyId(prosumer.id)
     setError(null)
