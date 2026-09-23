@@ -1,17 +1,6 @@
-// -----------------------------------------------------------------------------
-// File        : types/index.ts
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : TypeScript mirrors of the contracts returned by the Web API.
-//               Keeping them in one file means a change to the API surfaces as
-//               a compile error here rather than as a runtime surprise.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
-// The three roles the API recognises.
 export type UserRole = 'Backoffice' | 'GridOperator' | 'Prosumer'
 
-// Lifecycle states of a reservation, as defined by the API.
+
 export type ReservationStatus =
   | 'Pending'
   | 'Approved'
@@ -19,10 +8,10 @@ export type ReservationStatus =
   | 'Rejected'
   | 'Completed'
 
-// Direction of the energy transfer.
+
 export type ReservationType = 'Injection' | 'Withdrawal'
 
-/** An account, whether staff or prosumer. */
+
 export interface User {
   id: string
   fullName: string
@@ -35,20 +24,20 @@ export interface User {
   createdAtUtc: string
 }
 
-/** Successful login result. */
+
 export interface LoginResponse {
   accessToken: string
   expiresAtUtc: string
   user: User
 }
 
-/** Daily operating window of a station. */
+
 export interface OperatingHours {
   openTime: string
   closeTime: string
 }
 
-/** A solar microgrid node. */
+
 export interface Station {
   id: string
   code: string
@@ -66,13 +55,13 @@ export interface Station {
   updatedAtUtc: string
 }
 
-/** A station together with its distance from a searched point. */
+
 export interface NearbyStation {
   station: Station
   distanceMeters: number
 }
 
-/** A bookable energy transfer window. */
+
 export interface Slot {
   id: string
   stationId: string
@@ -85,13 +74,7 @@ export interface Slot {
   isActive: boolean
 }
 
-/**
- * A reservation.
- *
- * canBeModified and canBeCancelled are decided by the server from the twelve
- * hour notice rule. The UI only reads them to enable or disable buttons; it
- * never works the rule out for itself.
- */
+
 export interface Reservation {
   id: string
   reservationNo: string
@@ -113,14 +96,14 @@ export interface Reservation {
   completedAtUtc: string | null
 }
 
-/** Confirmation returned after a booking action, worded by the server. */
+
 export interface ReservationSummary {
   action: string
   message: string
   reservation: Reservation
 }
 
-/** Counts shown to a prosumer. */
+
 export interface ProsumerDashboard {
   prosumerNic: string
   pendingCount: number
@@ -130,7 +113,7 @@ export interface ProsumerDashboard {
   nextReservation: Reservation | null
 }
 
-/** Counts and today's workload shown to staff. */
+
 export interface OperatorDashboard {
   pendingCount: number
   approvedFutureCount: number
