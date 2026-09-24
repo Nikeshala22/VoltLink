@@ -1,38 +1,21 @@
-<#
-------------------------------------------------------------------------------
- File        : deploy-api-iis.ps1
- Project     : VoltLink - Smart Solar Microgrid Trading System
- Description : Publishes the VoltLink Web API and hosts it on IIS. Creates the
-               application pool and the website on first run, and simply
-               refreshes the files on later runs, so the same script serves as
-               both the initial deployment and the redeploy command.
- Author      : <IT Number - Member Name>
- Created     : 2026-09-03
-
- MUST BE RUN FROM AN ELEVATED POWERSHELL WINDOW ("Run as administrator"),
- because creating IIS sites and setting folder permissions require it.
-------------------------------------------------------------------------------
-#>
 
 [CmdletBinding()]
 param(
-    # Name of the IIS website and application pool.
+
     [string]$SiteName    = "VoltLinkApi",
 
-    # Port the API is served on. 8080 avoids clashing with the IIS default site.
     [int]$Port           = 8080,
 
-    # Folder IIS serves the application from.
+
     [string]$TargetPath  = "C:\inetpub\VoltLinkApi",
 
-    # Skip "dotnet publish" and deploy whatever is already in publish\api.
+
     [switch]$SkipPublish
 )
 
 $ErrorActionPreference = "Stop"
 
-# Resolve the repository root from this script's own location, so the script
-# works no matter which directory it is invoked from.
+
 $RepoRoot    = Split-Path -Parent $PSScriptRoot
 $ProjectPath = Join-Path $RepoRoot "backend\src\VoltLink.Api\VoltLink.Api.csproj"
 $PublishPath = Join-Path $RepoRoot "publish\api"
@@ -42,9 +25,7 @@ function Write-Step { param([string]$Message) Write-Host "`n==> $Message" -Foreg
 function Write-Ok   { param([string]$Message) Write-Host "    $Message" -ForegroundColor Green }
 function Write-Warn { param([string]$Message) Write-Host "    $Message" -ForegroundColor Yellow }
 
-# -----------------------------------------------------------------------------
-# 1. Confirm the script can actually do its job before changing anything.
-# -----------------------------------------------------------------------------
+
 Write-Step "Checking prerequisites"
 
 $identity  = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -54,8 +35,7 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
 }
 Write-Ok "Running elevated."
 
-# Without the ASP.NET Core Hosting Bundle, IIS has no module that can execute a
-# .NET application and every request returns HTTP 500.19.
+
 $ancm = "C:\Program Files\IIS\Asp.Net Core Module\V2\aspnetcorev2.dll"
 if (-not (Test-Path $ancm)) {
     throw ("The ASP.NET Core Hosting Bundle is not installed, so IIS cannot host this " +
@@ -68,9 +48,6 @@ Write-Ok ("ASP.NET Core Module V2 found, version " +
 Import-Module WebAdministration -ErrorAction Stop
 Write-Ok "IIS WebAdministration module loaded."
 
-# The production settings file carries the database connection string and the
-# signing keys. It is deliberately excluded from Git, so a fresh clone will not
-# have it and the deployment would start but fail to reach MongoDB.
 $prodSettings = Join-Path $RepoRoot "backend\src\VoltLink.Api\appsettings.Production.json"
 if (-not (Test-Path $prodSettings)) {
     throw ("appsettings.Production.json is missing. It holds the MongoDB connection " +
@@ -78,9 +55,7 @@ if (-not (Test-Path $prodSettings)) {
 }
 Write-Ok "Production settings file present."
 
-# -----------------------------------------------------------------------------
-# 2. Build the deployable output.
-# -----------------------------------------------------------------------------
+
 if (-not $SkipPublish) {
     Write-Step "Publishing the API in Release configuration"
     if (Test-Path $PublishPath) { Remove-Item $PublishPath -Recurse -Force }
@@ -94,9 +69,7 @@ if (-not $SkipPublish) {
     }
 }
 
-# -----------------------------------------------------------------------------
-# 3. Create the application pool.
-# -----------------------------------------------------------------------------
+
 Write-Step "Configuring the application pool"
 
 if (-not (Test-Path "IIS:\AppPools\$AppPoolName")) {
@@ -113,55 +86,44 @@ Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name managedRuntimeVersion -Value
 Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name startMode -Value "AlwaysRunning"
 Write-Ok "Set managed runtime to 'No Managed Code'."
 
-# -----------------------------------------------------------------------------
-# 4. Stop the site before replacing files, so no DLL is locked mid copy.
-# -----------------------------------------------------------------------------
 $siteExists = Test-Path "IIS:\Sites\$SiteName"
 if ($siteExists) {
     Write-Step "Stopping the running site before copying files"
     try { Stop-Website -Name $SiteName } catch { Write-Warn "Site was not running." }
     try { Stop-WebAppPool -Name $AppPoolName } catch { Write-Warn "Pool was not running." }
 
-    # Give the worker process a moment to release its file handles.
+
     Start-Sleep -Seconds 2
     Write-Ok "Stopped."
 }
 
-# -----------------------------------------------------------------------------
-# 5. Copy the published files.
-# -----------------------------------------------------------------------------
+
 Write-Step "Copying published files to $TargetPath"
 
 if (-not (Test-Path $TargetPath)) {
     New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
 }
 
-# /MIR mirrors the folder so files removed from the build are removed from the
-# deployment too. The logs folder is excluded so existing logs survive.
+
 robocopy $PublishPath $TargetPath /MIR /NFL /NDL /NJH /NJS /NP /XD logs | Out-Null
 
-# robocopy uses exit codes below 8 to report success with varying detail.
+
 if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE." }
 Write-Ok "Files copied."
 
 $logPath = Join-Path $TargetPath "logs"
 if (-not (Test-Path $logPath)) { New-Item -ItemType Directory -Path $logPath -Force | Out-Null }
 
-# -----------------------------------------------------------------------------
-# 6. Grant the application pool identity access to the folder.
-# -----------------------------------------------------------------------------
+
 Write-Step "Setting folder permissions"
 
-# The pool runs as the virtual account "IIS AppPool\<pool name>". It needs to
-# read the application, and to write into the logs folder for stdout logging.
+
 $poolIdentity = "IIS AppPool\$AppPoolName"
 icacls $TargetPath /grant "${poolIdentity}:(OI)(CI)(RX)" /T /C /Q | Out-Null
 icacls $logPath    /grant "${poolIdentity}:(OI)(CI)(M)"  /T /C /Q | Out-Null
 Write-Ok "Granted read and execute on the application, and write on logs."
 
-# -----------------------------------------------------------------------------
-# 7. Create the website.
-# -----------------------------------------------------------------------------
+
 Write-Step "Configuring the website"
 
 if (-not $siteExists) {
@@ -174,13 +136,10 @@ if (-not $siteExists) {
     Write-Ok "Updated existing site '$SiteName'."
 }
 
-# -----------------------------------------------------------------------------
-# 8. Allow other devices on the network to reach the API.
-# -----------------------------------------------------------------------------
+
 Write-Step "Opening the firewall port"
 
-# Without this rule the Android device and the emulator can reach the API from
-# this machine only, and every call from a phone times out.
+
 $ruleName = "VoltLink API (TCP $Port)"
 if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue)) {
     New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Protocol TCP `
@@ -190,9 +149,7 @@ if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContin
     Write-Ok "Firewall rule already present."
 }
 
-# -----------------------------------------------------------------------------
-# 9. Start everything and prove it works.
-# -----------------------------------------------------------------------------
+
 Write-Step "Starting the site"
 
 Start-WebAppPool -Name $AppPoolName
@@ -204,8 +161,7 @@ Write-Step "Verifying the deployment"
 $healthUrl = "http://localhost:$Port/api/v1/health"
 $ok = $false
 
-# The first request has to start the worker process and open the MongoDB
-# connection, so allow several attempts before declaring failure.
+
 foreach ($attempt in 1..10) {
     try {
         $response = Invoke-RestMethod -Uri $healthUrl -Method Get -TimeoutSec 15

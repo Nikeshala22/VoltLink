@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/LoginPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Sign in screen and the landing page of the web application.
-//               The Web API decides whether the credentials are valid and
-//               whether the account is active; this screen only shows the
-//               outcome and routes the user according to the role it returns.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
@@ -17,8 +6,6 @@ import { ApiError } from '../api/client'
 import { Alert } from '../components/Ui'
 import { IconExchange, IconNode, IconSolar, LogoMark } from '../components/Icons'
 
-// The three capabilities summarised on the showcase panel. Kept as data so the
-// panel stays a loop rather than three near identical blocks of markup.
 const HIGHLIGHTS = [
   {
     Icon: IconNode,
@@ -51,9 +38,7 @@ export default function LoginPage() {
     return <Navigate to="/dashboard" replace />
   }
 
-  /**
-   * Signs in, then routes by the role the API reports.
-   */
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
@@ -62,9 +47,7 @@ export default function LoginPage() {
     try {
       const profile = await login(email.trim(), password)
 
-      // A prosumer account belongs to the mobile application. Signing them out
-      // again is clearer than dropping them into a back-office screen where
-      // every request would be refused.
+    
       if (profile.role === 'Prosumer') {
         setError(
           'Prosumer accounts are served by the VoltLink mobile application. ' +
@@ -76,8 +59,7 @@ export default function LoginPage() {
 
       navigate('/dashboard', { replace: true })
     } catch (caught) {
-      // The API explains why a sign in failed, including an account that is
-      // awaiting activation, so its wording is shown unchanged.
+    
       setError(
         caught instanceof ApiError
           ? caught.message
@@ -92,11 +74,9 @@ export default function LoginPage() {
       <div className="w-full max-w-5xl">
         <div className="grid overflow-hidden rounded-3xl border border-line bg-surface lg:grid-cols-[1.05fr_1fr]"
              style={{ boxShadow: 'var(--shadow-raised)' }}>
-          {/* Showcase panel, hidden on small screens where the form matters more. */}
+         
           <div className="relative hidden overflow-hidden bg-brand-700 p-10 text-white lg:flex lg:flex-col lg:justify-between">
-            {/* A faint grid of connected nodes, drawn rather than downloaded.
-                It reads as the network the console manages, and costs nothing
-                beyond the markup already on the page. */}
+     
             <svg
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]"
@@ -137,7 +117,7 @@ export default function LoginPage() {
               {HIGHLIGHTS.map((highlight) => (
                 <li key={highlight.title} className="flex gap-3.5">
                   <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/12 ring-1 ring-white/20">
-                    <highlight.Icon className="h-[18px] w-[18px]" />
+                    <highlight.Icon className="h-4.5 w-4.5" />
                   </span>
                   <div>
                     <p className="text-sm font-medium">{highlight.title}</p>
@@ -153,9 +133,7 @@ export default function LoginPage() {
           </div>
 
           <div className="p-8 sm:p-10 lg:p-12">
-            {/* The mark is repeated here because the showcase panel beside it
-                is hidden on a phone, where this would otherwise be an
-                unbranded form. */}
+          
             <span className="mb-7 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-brand-fg lg:hidden">
               <LogoMark className="h-6 w-6" />
             </span>

@@ -1,15 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/ReservationsPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Energy reservation management. Staff filter and search the
-//               bookings, approve or reject the pending ones, and cancel on a
-//               prosumer's behalf. The twelve hour notice rule is decided by
-//               the service: this screen only reads the canBeCancelled flag it
-//               returns to decide whether the button is available.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { reservationsApi, stationsApi } from '../api/resources'
@@ -28,7 +16,7 @@ import {
 import { IconRefresh } from '../components/Icons'
 import type { Reservation, Station } from '../types'
 
-// Offered as filter buttons, in the order a member of staff usually wants them.
+
 const STATUS_FILTERS = ['', 'Pending', 'Approved', 'Completed', 'Cancelled', 'Rejected'] as const
 
 export default function ReservationsPage() {
@@ -43,19 +31,17 @@ export default function ReservationsPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
 
-  // The station list only feeds the filter dropdown, so it is fetched once.
+  
   useEffect(() => {
     stationsApi
       .list()
       .then(setStations)
       .catch(() => {
-        // A failure here only costs the filter dropdown, so the page carries on.
+        
       })
   }, [])
 
-  /**
-   * Loads the bookings matching the current filters.
-   */
+
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -79,9 +65,7 @@ export default function ReservationsPage() {
     void load()
   }, [load])
 
-  /**
-   * Runs an approve, reject or cancel action and reports the outcome.
-   */
+ 
   async function runAction(
     reservation: Reservation,
     action: 'approve' | 'reject' | 'cancel',
@@ -98,16 +82,14 @@ export default function ReservationsPage() {
         await reservationsApi.reject(reservation.id)
         setNotice(`${reservation.reservationNo} was rejected and its place released.`)
       } else {
-        // The summary message is written by the service, so the confirmation
-        // the user sees is the server's own wording.
+       
         const summary = await reservationsApi.cancel(reservation.id)
         setNotice(summary.message)
       }
 
       await load()
     } catch (caught) {
-      // A cancellation inside the twelve hour window is refused here with the
-      // service's explanation.
+      
       setError(caught instanceof ApiError ? caught.message : 'Could not complete the action.')
     } finally {
       setBusyId(null)
@@ -131,8 +113,7 @@ export default function ReservationsPage() {
       {error && <Alert kind="error" message={error} onDismiss={() => setError(null)} />}
       {notice && <Alert kind="success" message={notice} onDismiss={() => setNotice(null)} />}
 
-      {/* The filters sit on their own panel above the results, so narrowing a
-          long list never scrolls the table out of view. */}
+      
       <div className="card mb-4 p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <FilterChips
@@ -176,10 +157,7 @@ export default function ReservationsPage() {
           />
         ) : (
           <>
-            {/* Below the medium breakpoint the table is replaced with a list of
-                cards. Squeezing eight columns onto a phone forces the station
-                name to wrap over several lines and makes the whole row hard to
-                read, so each booking gets its own block instead. */}
+            
             <ul className="divide-y divide-line md:hidden">
               {reservations.map((r) => (
                 <li key={r.id} className="p-4">
@@ -320,8 +298,7 @@ export default function ReservationsPage() {
                           </>
                         )}
 
-                        {/* canBeCancelled is decided by the service from the
-                            twelve hour rule; this screen never works it out. */}
+                      
                         {r.canBeCancelled && (
                           <button
                             type="button"

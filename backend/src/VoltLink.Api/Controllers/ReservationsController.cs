@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : ReservationsController.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Controllers
-// Description : Energy reservation endpoints covering the whole booking
-//               lifecycle: request, change, cancel, approve, reject, the QR
-//               payload for the prosumer, and the operator scan and completion.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VoltLink.Api.Dtos;
@@ -19,11 +8,7 @@ using VoltLink.Api.Services;
 
 namespace VoltLink.Api.Controllers;
 
-/// <summary>
-/// Power trading reservations. Ownership is decided in the service from the
-/// caller context built here, so a prosumer can never reach another person's
-/// booking whatever they put in the query string.
-/// </summary>
+
 [ApiController]
 [Route("api/v1/reservations")]
 [Produces("application/json")]
@@ -32,24 +17,15 @@ public class ReservationsController : ControllerBase
 {
     private readonly IReservationService _reservations;
 
-    /// <summary>
-    /// Receives the reservation service from dependency injection.
-    /// </summary>
-    public ReservationsController(IReservationService reservations)
+        public ReservationsController(IReservationService reservations)
     {
         _reservations = reservations;
     }
 
-    /// <summary>
-    /// Builds the caller context from the validated access token. The identity
-    /// always comes from the token, never from the request body.
-    /// </summary>
+    
     private CallerContext Caller => new(User.GetUserId(), User.GetRole());
 
-    /// <summary>
-    /// Searches bookings. Staff see everything; a prosumer sees only their own
-    /// records regardless of the filters they supply.
-    /// </summary>
+   
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<ReservationResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<ReservationResponse>>> SearchAsync(
@@ -77,9 +53,7 @@ public class ReservationsController : ControllerBase
         return Ok(results);
     }
 
-    /// <summary>
-    /// Lists the bookings still awaiting approval, for the operator dashboard.
-    /// </summary>
+   
     [HttpGet("pending")]
     [Authorize(Policy = Policies.Staff)]
     [ProducesResponseType(typeof(IReadOnlyList<ReservationResponse>), StatusCodes.Status200OK)]
@@ -92,9 +66,7 @@ public class ReservationsController : ControllerBase
         return Ok(results);
     }
 
-    /// <summary>
-    /// Returns one booking.
-    /// </summary>
+   
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ReservationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -106,10 +78,7 @@ public class ReservationsController : ControllerBase
         return Ok(reservation);
     }
 
-    /// <summary>
-    /// Creates a booking. Refused with 422 when the window is in the past or
-    /// more than seven days away, and with 409 when the window is full.
-    /// </summary>
+    
     [HttpPost]
     [ProducesResponseType(typeof(ReservationSummaryResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -123,9 +92,7 @@ public class ReservationsController : ControllerBase
             nameof(GetByIdAsync), new { id = summary.Reservation.Id }, summary);
     }
 
-    /// <summary>
-    /// Changes a booking. Refused with 422 inside the twelve hour notice period.
-    /// </summary>
+    
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ReservationSummaryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -136,9 +103,7 @@ public class ReservationsController : ControllerBase
         return Ok(summary);
     }
 
-    /// <summary>
-    /// Cancels a booking. Refused with 422 inside the twelve hour notice period.
-    /// </summary>
+   
     [HttpPatch("{id}/cancel")]
     [ProducesResponseType(typeof(ReservationSummaryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -149,9 +114,7 @@ public class ReservationsController : ControllerBase
         return Ok(summary);
     }
 
-    /// <summary>
-    /// Approves a pending booking and issues its transaction QR token.
-    /// </summary>
+    
     [HttpPatch("{id}/approve")]
     [Authorize(Policy = Policies.Staff)]
     [ProducesResponseType(typeof(ReservationResponse), StatusCodes.Status200OK)]
@@ -163,9 +126,7 @@ public class ReservationsController : ControllerBase
         return Ok(reservation);
     }
 
-    /// <summary>
-    /// Rejects a pending booking and returns its place to the slot.
-    /// </summary>
+   
     [HttpPatch("{id}/reject")]
     [Authorize(Policy = Policies.Staff)]
     [ProducesResponseType(typeof(ReservationResponse), StatusCodes.Status200OK)]
@@ -177,10 +138,7 @@ public class ReservationsController : ControllerBase
         return Ok(reservation);
     }
 
-    /// <summary>
-    /// Returns the QR payload for an approved booking. The mobile application
-    /// renders this string as a QR code; it carries no personal data.
-    /// </summary>
+    
     [HttpGet("{id}/qr")]
     [ProducesResponseType(typeof(QrCodeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -192,11 +150,7 @@ public class ReservationsController : ControllerBase
         return Ok(qr);
     }
 
-    /// <summary>
-    /// Verifies a scanned QR token against the server and returns the booking
-    /// it identifies. Nothing is changed, so the operator can check the details
-    /// before deciding to finalise the transfer.
-    /// </summary>
+    
     [HttpPost("verify-qr")]
     [Authorize(Policy = Policies.Staff)]
     [ProducesResponseType(typeof(ReservationResponse), StatusCodes.Status200OK)]
@@ -208,10 +162,7 @@ public class ReservationsController : ControllerBase
         return Ok(reservation);
     }
 
-    /// <summary>
-    /// Finalises the energy transfer. A second attempt on the same booking is
-    /// refused, which is what makes a QR code single use.
-    /// </summary>
+   
     [HttpPost("{id}/complete")]
     [Authorize(Policy = Policies.Staff)]
     [ProducesResponseType(typeof(ReservationSummaryResponse), StatusCodes.Status200OK)]

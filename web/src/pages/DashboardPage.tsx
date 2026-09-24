@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/DashboardPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Operational overview for back-office officers and grid
-//               operators. Every figure shown here is read from the Web API,
-//               which computes the counts; nothing on this page is calculated
-//               in the browser or hard coded.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { dashboardApi } from '../api/resources'
@@ -78,28 +67,28 @@ export default function DashboardPage() {
               value={data.pendingCount}
               hint="Reservations needing a decision"
               tone="warn"
-              icon={<IconClock className="h-[18px] w-[18px]" />}
+              icon={<IconClock className="h-4.5 w-4.5" />}
             />
             <StatTile
               label="Approved upcoming"
               value={data.approvedFutureCount}
               hint="Confirmed future transfers"
               tone="brand"
-              icon={<IconExchange className="h-[18px] w-[18px]" />}
+              icon={<IconExchange className="h-4.5 w-4.5" />}
             />
             <StatTile
               label="Completed today"
               value={data.completedTodayCount}
               hint="Energy transfers finalised"
               tone="success"
-              icon={<IconBolt className="h-[18px] w-[18px]" />}
+              icon={<IconBolt className="h-4.5 w-4.5" />}
             />
             <StatTile
               label="Active nodes"
               value={data.activeStationCount}
               hint="Microgrid stations in service"
               tone="accent"
-              icon={<IconNode className="h-[18px] w-[18px]" />}
+              icon={<IconNode className="h-4.5 w-4.5" />}
             />
           </div>
 

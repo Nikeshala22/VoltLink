@@ -1,30 +1,16 @@
-<#
-------------------------------------------------------------------------------
- File        : deploy-web-iis.ps1
- Project     : VoltLink - Smart Solar Microgrid Trading System
- Description : Builds the React back-office application and hosts it on IIS
-               beside the Web API. Once this has run, the whole system is
-               served by IIS and nothing has to be started by hand: IIS is a
-               Windows service and starts with the machine.
- Author      : <IT Number - Member Name>
- Created     : 2026-09-03
-
- MUST BE RUN FROM AN ELEVATED POWERSHELL WINDOW ("Run as administrator").
-------------------------------------------------------------------------------
-#>
 
 [CmdletBinding()]
 param(
-    # Name of the IIS website and application pool for the web client.
+
     [string]$SiteName   = "VoltLinkWeb",
 
-    # Port the site is served on. The API uses 8080.
+    
     [int]$Port          = 8081,
 
-    # Folder IIS serves the compiled site from.
+   
     [string]$TargetPath = "C:\inetpub\VoltLinkWeb",
 
-    # Skip "npm run build" and deploy whatever is already in web\dist.
+  
     [switch]$SkipBuild
 )
 
@@ -39,9 +25,7 @@ function Write-Step { param([string]$Message) Write-Host "`n==> $Message" -Foreg
 function Write-Ok   { param([string]$Message) Write-Host "    $Message" -ForegroundColor Green }
 function Write-Warn { param([string]$Message) Write-Host "    $Message" -ForegroundColor Yellow }
 
-# -----------------------------------------------------------------------------
-# 1. Prerequisites.
-# -----------------------------------------------------------------------------
+
 Write-Step "Checking prerequisites"
 
 $identity  = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -54,16 +38,13 @@ Write-Ok "Running elevated."
 Import-Module WebAdministration -ErrorAction Stop
 Write-Ok "IIS WebAdministration module loaded."
 
-# -----------------------------------------------------------------------------
-# 2. Build the site.
-# -----------------------------------------------------------------------------
+
 if (-not $SkipBuild) {
     Write-Step "Building the React application"
 
     Push-Location $WebRoot
     try {
-        # The build reads .env.production, which points at the API address the
-        # deployed site should call.
+      
         npm run build
         if ($LASTEXITCODE -ne 0) { throw "npm run build failed with exit code $LASTEXITCODE." }
     } finally {
@@ -79,14 +60,12 @@ if (-not (Test-Path (Join-Path $DistPath "index.html"))) {
     throw "No build output found at $DistPath. Run without -SkipBuild."
 }
 
-# The SPA fallback rules live in public\web.config and are copied by the build.
+
 if (-not (Test-Path (Join-Path $DistPath "web.config"))) {
     Write-Warn "web.config is missing from the build output; deep links may return 404."
 }
 
-# -----------------------------------------------------------------------------
-# 3. Application pool.
-# -----------------------------------------------------------------------------
+
 Write-Step "Configuring the application pool"
 
 if (-not (Test-Path "IIS:\AppPools\$AppPoolName")) {
@@ -96,13 +75,11 @@ if (-not (Test-Path "IIS:\AppPools\$AppPoolName")) {
     Write-Ok "Application pool '$AppPoolName' already exists."
 }
 
-# This site is static files only, so no managed runtime is needed at all.
+
 Set-ItemProperty "IIS:\AppPools\$AppPoolName" -Name managedRuntimeVersion -Value ""
 Write-Ok "Set managed runtime to 'No Managed Code'."
 
-# -----------------------------------------------------------------------------
-# 4. Copy the compiled site.
-# -----------------------------------------------------------------------------
+
 $siteExists = Test-Path "IIS:\Sites\$SiteName"
 if ($siteExists) {
     Write-Step "Stopping the running site before copying files"
@@ -117,23 +94,19 @@ if (-not (Test-Path $TargetPath)) {
     New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
 }
 
-# /MIR mirrors the folder so assets from a previous build are removed.
+
 robocopy $DistPath $TargetPath /MIR /NFL /NDL /NJH /NJS /NP | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE." }
 Write-Ok "Files copied."
 
-# -----------------------------------------------------------------------------
-# 5. Permissions.
-# -----------------------------------------------------------------------------
+
 Write-Step "Setting folder permissions"
 
 $poolIdentity = "IIS AppPool\$AppPoolName"
 icacls $TargetPath /grant "${poolIdentity}:(OI)(CI)(RX)" /T /C /Q | Out-Null
 Write-Ok "Granted read and execute to the application pool identity."
 
-# -----------------------------------------------------------------------------
-# 6. Website.
-# -----------------------------------------------------------------------------
+
 Write-Step "Configuring the website"
 
 if (-not $siteExists) {
@@ -146,9 +119,7 @@ if (-not $siteExists) {
     Write-Ok "Updated existing site '$SiteName'."
 }
 
-# -----------------------------------------------------------------------------
-# 7. Firewall.
-# -----------------------------------------------------------------------------
+
 Write-Step "Opening the firewall port"
 
 $ruleName = "VoltLink Web (TCP $Port)"
@@ -160,9 +131,7 @@ if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContin
     Write-Ok "Firewall rule already present."
 }
 
-# -----------------------------------------------------------------------------
-# 8. Start and verify.
-# -----------------------------------------------------------------------------
+
 Write-Step "Starting the site"
 
 Start-WebAppPool -Name $AppPoolName

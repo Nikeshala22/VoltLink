@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/StationDetailPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : One microgrid node and the energy booking windows it offers.
-//               Staff add, edit and remove windows here. The API refuses to
-//               delete a window that prosumers have booked, and refuses to cut
-//               its capacity below the places already taken.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
@@ -34,10 +23,7 @@ import {
 } from '../components/Icons'
 import type { Slot, Station } from '../types'
 
-/**
- * Converts a UTC timestamp into the value a datetime-local input expects,
- * which is local time with no zone marker.
- */
+
 function toLocalInputValue(utc: string): string {
   const date = new Date(utc)
   const offsetMs = date.getTimezoneOffset() * 60_000
@@ -45,15 +31,12 @@ function toLocalInputValue(utc: string): string {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
 }
 
-/**
- * Converts the local value typed into a datetime-local input back into the UTC
- * string the API expects. All times cross the wire as UTC.
- */
+
 function toUtcIso(localValue: string): string {
   return new Date(localValue).toISOString()
 }
 
-/** Sensible default window: tomorrow morning, two hours long. */
+
 function defaultSlotForm() {
   const start = new Date()
   start.setDate(start.getDate() + 1)
@@ -85,9 +68,7 @@ export default function StationDetailPage() {
   const [form, setForm] = useState(defaultSlotForm)
   const [isSaving, setIsSaving] = useState(false)
 
-  /**
-   * Loads the node and its booking windows together.
-   */
+ 
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -111,7 +92,7 @@ export default function StationDetailPage() {
     void load()
   }, [load])
 
-  /** Opens the form ready to add a new window. */
+  
   function openCreate() {
     setEditing(null)
     setForm(defaultSlotForm())
@@ -119,7 +100,7 @@ export default function StationDetailPage() {
     setIsFormOpen(true)
   }
 
-  /** Opens the form populated with an existing window. */
+  
   function openEdit(slot: Slot) {
     setEditing(slot)
     setForm({
@@ -133,9 +114,7 @@ export default function StationDetailPage() {
     setIsFormOpen(true)
   }
 
-  /**
-   * Creates or updates a booking window.
-   */
+
   async function handleSave(event: FormEvent) {
     event.preventDefault()
     setIsSaving(true)
@@ -161,17 +140,13 @@ export default function StationDetailPage() {
       setIsFormOpen(false)
       await load()
     } catch (caught) {
-      // The API enforces the window rules: end after start, at most 24 hours,
-      // no clash with another window, and capacity not below what is booked.
+      
       setError(caught instanceof ApiError ? caught.message : 'Could not save the booking window.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  /**
-   * Deletes a booking window, which the API refuses while it is booked.
-   */
   async function handleDelete(slot: Slot) {
     setError(null)
     setNotice(null)
@@ -219,7 +194,7 @@ export default function StationDetailPage() {
             value={`${station.capacityKwh} kWh`}
             hint="Rated throughput of this node"
             tone="accent"
-            icon={<IconBolt className="h-[18px] w-[18px]" />}
+            icon={<IconBolt className="h-4.5 w-4.5" />}
           />
           <StatTile
             label="Battery slots free"
@@ -231,7 +206,7 @@ export default function StationDetailPage() {
             }
             hint="Storage bays currently available"
             tone="brand"
-            icon={<IconBattery className="h-[18px] w-[18px]" />}
+            icon={<IconBattery className="h-4.5 w-4.5" />}
           />
           <StatTile
             label="Operating hours"
@@ -239,11 +214,10 @@ export default function StationDetailPage() {
             hint="Window the node accepts transfers"
             compact
             tone="warn"
-            icon={<IconClock className="h-[18px] w-[18px]" />}
+            icon={<IconClock className="h-4.5 w-4.5" />}
           />
 
-          {/* Status is a state rather than a figure, so it keeps the panel
-              shape but shows the badge and the coordinates instead. */}
+      
           <div className="card relative overflow-hidden p-5">
             <span
               className={`absolute inset-y-0 left-0 w-1 ${station.isActive ? 'bg-success' : 'bg-ink-300'}`}
@@ -260,7 +234,7 @@ export default function StationDetailPage() {
                 </p>
               </div>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-ink-500">
-                <IconPin className="h-[18px] w-[18px]" />
+                <IconPin className="h-4.5 w-4.5" />
               </span>
             </div>
           </div>

@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/ProsumersPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Solar prosumer accounts, keyed by NIC. Staff search and review
-//               the accounts; back-office officers create them, edit them and
-//               control activation. Only a back-office officer can reactivate a
-//               deactivated account, which the service enforces.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { prosumersApi } from '../api/resources'
@@ -55,9 +44,7 @@ export default function ProsumersPage() {
   const [form, setForm] = useState(BLANK_FORM)
   const [isSaving, setIsSaving] = useState(false)
 
-  /**
-   * Loads the prosumer list using the current search and activation filter.
-   */
+
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -80,9 +67,7 @@ export default function ProsumersPage() {
     void load()
   }, [load])
 
-  /**
-   * Registers a prosumer on behalf of a walk-in applicant.
-   */
+ 
   async function handleCreate(event: FormEvent) {
     event.preventDefault()
     setIsSaving(true)
@@ -95,16 +80,14 @@ export default function ProsumersPage() {
       setForm(BLANK_FORM)
       await load()
     } catch (caught) {
-      // A NIC or email already in use is rejected by the service.
+    
       setError(caught instanceof ApiError ? caught.message : 'Could not register the prosumer.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  /**
-   * Activates or deactivates an account.
-   */
+
   async function handleToggleActive(prosumer: User) {
     setError(null)
     setNotice(null)

@@ -1,15 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/StationsPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Management of the solar microgrid nodes. Back-office officers
-//               register and edit nodes and take them out of service; grid
-//               operators update battery availability. When the API refuses an
-//               action, such as deactivating a node that still has bookings,
-//               its own explanation is shown unchanged.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
@@ -29,8 +17,7 @@ import {
 import { IconPlus } from '../components/Icons'
 import type { Station } from '../types'
 
-// A new station starts centred on Colombo, which saves typing coordinates for
-// the common case while still allowing any location to be entered.
+
 const BLANK_FORM: StationPayload & { code: string } = {
   code: '',
   name: '',
@@ -79,7 +66,7 @@ export default function StationsPage() {
     void load()
   }, [load])
 
-  /** Opens the form ready to register a new node. */
+ 
   function openCreate() {
     setEditing(null)
     setForm(BLANK_FORM)
@@ -87,7 +74,6 @@ export default function StationsPage() {
     setIsFormOpen(true)
   }
 
-  /** Opens the form populated with an existing node. */
   function openEdit(station: Station) {
     setEditing(station)
     setForm({
@@ -106,9 +92,7 @@ export default function StationsPage() {
     setIsFormOpen(true)
   }
 
-  /**
-   * Creates or updates a node, then refreshes the list.
-   */
+
   async function handleSave(event: FormEvent) {
     event.preventDefault()
     setIsSaving(true)
@@ -126,18 +110,14 @@ export default function StationsPage() {
       setIsFormOpen(false)
       await load()
     } catch (caught) {
-      // Duplicate codes and invalid coordinates are rejected by the API; its
-      // wording is shown so the reason is always the server's.
+      
       setError(caught instanceof ApiError ? caught.message : 'Could not save the station.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  /**
-   * Toggles a node in or out of service. Deactivation is refused by the API
-   * while the node still holds active reservations.
-   */
+ 
   async function handleToggleActive(station: Station) {
     setError(null)
     setNotice(null)
@@ -157,13 +137,11 @@ export default function StationsPage() {
     }
   }
 
-  /**
-   * Updates how many battery storage slots are currently free.
-   */
+  
   async function handleBatteryChange(station: Station, value: string) {
     const parsed = Number(value)
 
-    // The API validates this too; checking here just avoids a pointless call.
+   
     if (!Number.isFinite(parsed) || parsed < 0) return
 
     setError(null)
@@ -215,8 +193,7 @@ export default function StationsPage() {
           />
         ) : (
           <>
-            {/* On a phone the eight column table forces the node name and
-                address to wrap badly, so each node becomes its own card. */}
+            
             <ul className="divide-y divide-line md:hidden">
               {stations.map((station) => (
                 <li key={station.id} className="p-4">
@@ -289,16 +266,10 @@ export default function StationsPage() {
               <tbody>
                 {stations.map((station) => (
                   <tr key={station.id}>
-                    {/* The code is an identifier, so it is never allowed to
-                        wrap: broken across three lines it stops reading as one
-                        value. The table already scrolls sideways if the row
-                        needs more width than the panel has. */}
+                   
                     <td className="whitespace-nowrap font-medium text-ink-900">{station.code}</td>
-                    {/* Given a floor width so the node name is not squeezed
-                        into a one word per line column between the medium
-                        breakpoint and a wide monitor. Below that floor the
-                        table scrolls sideways inside its own panel. */}
-                    <td className="min-w-[11rem]">
+                  
+                    <td className="min-w-44">
                       <Link
                         to={`/stations/${station.id}`}
                         className="font-medium text-ink-900 transition-colors hover:text-brand-600"
@@ -317,7 +288,7 @@ export default function StationsPage() {
                           max={station.totalBatterySlots}
                           defaultValue={station.availableBatterySlots}
                           onBlur={(e) => void handleBatteryChange(station, e.target.value)}
-                          className="numeric w-[4.5rem] rounded-lg border border-line-strong bg-surface-2 px-2 py-1.5 text-sm text-ink-900 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
+                          className="numeric w-18 rounded-lg border border-line-strong bg-surface-2 px-2 py-1.5 text-sm text-ink-900 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
                           title="Battery slots currently free"
                         />
                         <span className="text-xs text-ink-400">/ {station.totalBatterySlots}</span>
@@ -385,8 +356,7 @@ export default function StationsPage() {
             <input
               required
               value={form.code}
-              // The code identifies the node in other records, so it is fixed
-              // once the node exists.
+             
               disabled={editing !== null}
               onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
               className="field-input"

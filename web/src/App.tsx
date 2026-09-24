@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : App.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Route table for the whole application. Each protected route is
-//               wrapped in the guard, and the back-office only sections declare
-//               the roles allowed to reach them. The guard is a navigation
-//               convenience: the Web API enforces the same restrictions itself.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -25,10 +14,10 @@ import UsersPage from './pages/UsersPage'
 export default function App() {
   return (
     <Routes>
-      {/* The login screen is the only page reachable while signed out. */}
+      
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Everything inside the shell requires a signed in staff account. */}
+      
       <Route
         element={
           <ProtectedRoute>
@@ -46,7 +35,7 @@ export default function App() {
 
         <Route path="/prosumers" element={<ProsumersPage />} />
 
-        {/* Account administration belongs to back-office officers only. */}
+        
         <Route
           path="/activations"
           element={
@@ -65,8 +54,7 @@ export default function App() {
         />
       </Route>
 
-      {/* Anything unrecognised goes to the dashboard, which in turn redirects
-          to the login page when nobody is signed in. */}
+     
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
