@@ -1,15 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : pages/ReservationsPage.tsx
-// Project     : VoltLink Web - Smart Solar Microgrid Trading System
-// Description : Energy reservation management. Staff filter and search the
-//               bookings, approve or reject the pending ones, and cancel on a
-//               prosumer's behalf. The twelve hour notice rule is decided by
-//               the service: this screen only reads the canBeCancelled flag it
-//               returns to decide whether the button is available.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { reservationsApi, stationsApi } from '../api/resources'

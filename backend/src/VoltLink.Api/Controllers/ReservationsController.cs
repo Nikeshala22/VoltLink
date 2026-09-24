@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : ReservationsController.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Controllers
-// Description : Energy reservation endpoints covering the whole booking
-//               lifecycle: request, change, cancel, approve, reject, the QR
-//               payload for the prosumer, and the operator scan and completion.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VoltLink.Api.Dtos;

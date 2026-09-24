@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File        : ReservationRepository.cs
-// Project     : VoltLink.Api - Smart Solar Microgrid Trading System
-// Module      : Repositories
-// Description : MongoDB implementation of IReservationRepository. The status
-//               transitions are written as guarded atomic updates so that two
-//               simultaneous requests cannot both act on the same booking.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
-// -----------------------------------------------------------------------------
-
 using System.Text.RegularExpressions;
 using MongoDB.Bson;
 using MongoDB.Driver;
