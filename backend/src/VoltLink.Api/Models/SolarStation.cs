@@ -5,8 +5,7 @@
 // Description : MongoDB document for the "solarStationInfo" collection,
 //               describing a physical solar microgrid node including its
 //               geographic position, capacity and battery slot inventory.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson;

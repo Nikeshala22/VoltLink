@@ -5,8 +5,7 @@
 // Description : MongoDB document for the "energyReservations" collection. Each
 //               document is one prosumer booking of one energy transfer slot,
 //               through its whole lifecycle from Pending to Completed.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23211414   Ama B L N S
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson;

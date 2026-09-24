@@ -6,8 +6,7 @@
 //               converts it into a consistent ProblemDetails response. This is
 //               what allows both clients to display the reason a request was
 //               refused without duplicating any business logic themselves.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using System.Text.Json;

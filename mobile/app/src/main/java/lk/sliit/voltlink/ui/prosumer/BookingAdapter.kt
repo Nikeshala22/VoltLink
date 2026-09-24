@@ -4,8 +4,7 @@
 // Description : RecyclerView adapter for the booking list. Shows the values the
 //               Web API returned, including the status, and reports taps back
 //               to the activity.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

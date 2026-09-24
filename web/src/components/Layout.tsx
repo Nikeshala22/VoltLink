@@ -11,8 +11,6 @@
 //               permanent from the large breakpoint upwards and becomes a
 //               slide over drawer below it, so the same markup works from a
 //               phone to a desktop.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useEffect, useRef, useState } from 'react'

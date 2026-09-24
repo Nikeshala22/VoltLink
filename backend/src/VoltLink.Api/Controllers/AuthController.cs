@@ -5,8 +5,7 @@
 // Description : Authentication endpoints shared by the React web application
 //               and the Android application: login, prosumer self service
 //               registration and retrieval of the signed in profile.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Authorization;

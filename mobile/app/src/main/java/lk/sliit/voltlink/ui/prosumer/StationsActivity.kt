@@ -6,8 +6,7 @@
 //               service orders the nodes by distance and reports how far each
 //               one is. Results are cached in SQLite so the screen still shows
 //               the last known nodes when the service cannot be reached.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

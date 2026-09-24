@@ -5,8 +5,7 @@
 // Description : Energy reservation endpoints covering the whole booking
 //               lifecycle: request, change, cancel, approve, reject, the QR
 //               payload for the prosumer, and the operator scan and completion.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23211414   Ama B L N S
 // -----------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Authorization;

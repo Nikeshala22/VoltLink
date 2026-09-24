@@ -6,8 +6,7 @@
 //
 //               The position is only ever sent to the service, which performs
 //               the geographic search. Nothing here calculates a distance.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.util

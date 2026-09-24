@@ -5,8 +5,7 @@
 // Description : Endpoints that address a single energy booking window directly.
 //               Creation and listing by station live on StationsController,
 //               because a window only exists in the context of its station.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Authorization;

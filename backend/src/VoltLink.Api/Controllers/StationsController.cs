@@ -5,8 +5,7 @@
 // Description : Solar microgrid node endpoints. Serves the back-office station
 //               screens, the grid operator battery availability updates, and
 //               the nearby stations search used by the Android map.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Authorization;

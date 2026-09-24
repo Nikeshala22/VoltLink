@@ -4,8 +4,6 @@
 // Description : Small presentational building blocks shared by every screen:
 //               status badges, page headers, toolbars, empty and loading
 //               states, alerts, statistic tiles and a modal dialog.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import type { ReactNode } from 'react'

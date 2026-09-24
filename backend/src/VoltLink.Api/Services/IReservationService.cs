@@ -5,8 +5,7 @@
 // Description : Contract for the energy reservation business logic: the seven
 //               day booking horizon, the twelve hour change notice, slot
 //               capacity, the approval workflow and QR verification.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23211414   Ama B L N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Dtos;

@@ -5,8 +5,7 @@
 //               whether the account is active, and reports the role. This
 //               screen stores the resulting session in SQLite and routes the
 //               user to the home screen for that role.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui

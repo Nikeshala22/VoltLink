@@ -5,8 +5,6 @@
 //               Staff add, edit and remove windows here. The API refuses to
 //               delete a window that prosumers have booked, and refuses to cut
 //               its capacity below the places already taken.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from 'react'

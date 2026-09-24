@@ -5,8 +5,7 @@
 // Description : Contract for energy booking slot business logic: creating the
 //               windows a station offers, and protecting windows that
 //               prosumers have already booked.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Dtos;

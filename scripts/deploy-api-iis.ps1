@@ -6,8 +6,7 @@
                application pool and the website on first run, and simply
                refreshes the files on later runs, so the same script serves as
                both the initial deployment and the redeploy command.
- Author      : <IT Number - Member Name>
- Created     : 2026-09-03
+
 
  MUST BE RUN FROM AN ELEVATED POWERSHELL WINDOW ("Run as administrator"),
  because creating IIS sites and setting folder permissions require it.

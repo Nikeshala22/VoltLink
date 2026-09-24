@@ -4,8 +4,6 @@
 // Description : TypeScript mirrors of the contracts returned by the Web API.
 //               Keeping them in one file means a change to the API surfaces as
 //               a compile error here rather than as a runtime surprise.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 // The three roles the API recognises.

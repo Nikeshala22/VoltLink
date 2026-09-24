@@ -5,8 +5,7 @@
 //               as the instant it names. .NET writes a variable number of
 //               fractional digits, and reading a seven digit fraction as
 //               milliseconds once shifted displayed times by over an hour.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.util

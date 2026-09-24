@@ -9,8 +9,6 @@
 //               text colour through "currentColor", and the set stays small
 //               because only the symbols this application actually uses are
 //               defined here.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import type { SVGProps } from 'react'

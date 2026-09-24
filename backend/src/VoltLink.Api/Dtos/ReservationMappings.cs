@@ -5,8 +5,7 @@
 // Description : Conversion from the reservation storage document to the client
 //               contract, including the server side evaluation of whether the
 //               booking may still be changed under the twelve hour rule.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23211414   Ama B L N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

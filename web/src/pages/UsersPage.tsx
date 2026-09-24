@@ -5,8 +5,6 @@
 //               Backoffice and Grid Operator. The whole page is restricted to
 //               back-office officers, and the service refuses these calls from
 //               any other role regardless of what the browser allows.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from 'react'

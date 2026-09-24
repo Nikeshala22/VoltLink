@@ -4,8 +4,7 @@
 // Description : Prosumer self registration, using the NIC as the primary key.
 //               The Web API creates the account inactive, so the user is told
 //               to wait for back-office approval rather than being signed in.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui

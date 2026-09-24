@@ -5,8 +5,6 @@
 //               wrapped in the guard, and the back-office only sections declare
 //               the roles allowed to reach them. The guard is a navigation
 //               convenience: the Web API enforces the same restrictions itself.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { Navigate, Route, Routes } from 'react-router-dom'

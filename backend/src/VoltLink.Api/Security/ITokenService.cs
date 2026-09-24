@@ -4,8 +4,7 @@
 // Module      : Security
 // Description : Contract for issuing JSON Web Tokens to authenticated users of
 //               the web application and the Android application.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera 
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

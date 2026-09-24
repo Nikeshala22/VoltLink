@@ -5,8 +5,7 @@
 //               The Web API decides whether the credentials are valid and
 //               whether the account is active; this screen only shows the
 //               outcome and routes the user according to the role it returns.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+
 // -----------------------------------------------------------------------------
 
 import { useState } from 'react'

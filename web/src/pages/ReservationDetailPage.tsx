@@ -5,8 +5,6 @@
 //               the actions still available on it. Also carries the operator
 //               tool for verifying a scanned prosumer QR code against the
 //               service and finalising the energy transfer.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from 'react'

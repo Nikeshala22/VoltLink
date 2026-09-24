@@ -5,8 +5,7 @@
 // Description : Back-office administration of web application accounts, that
 //               is Backoffice and GridOperator users. The whole controller is
 //               restricted to back-office officers.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Authorization;

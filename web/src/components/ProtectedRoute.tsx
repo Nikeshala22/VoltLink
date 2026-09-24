@@ -5,8 +5,6 @@
 //               keeps a signed in user away from screens their role does not
 //               cover. This is a navigation convenience only: the Web API
 //               refuses the same requests regardless of what the browser shows.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { Navigate, useLocation } from 'react-router-dom'

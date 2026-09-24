@@ -6,8 +6,7 @@
 //               screen after killing the process the splash screen's check
 //               never runs, and the expired token used to be sent anyway,
 //               leaving the user waiting on a refusal before sign in opened.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.data.remote

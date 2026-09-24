@@ -9,8 +9,7 @@
 //               the seven day horizon, whether it still has room, and whether
 //               a change is still permitted are all decided by the Web API,
 //               and its refusal is shown to the user unchanged.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924   M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

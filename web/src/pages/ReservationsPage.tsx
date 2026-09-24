@@ -6,8 +6,6 @@
 //               prosumer's behalf. The twelve hour notice rule is decided by
 //               the service: this screen only reads the canBeCancelled flag it
 //               returns to decide whether the button is available.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from 'react'

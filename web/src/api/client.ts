@@ -5,8 +5,6 @@
 //               Web API. It attaches the access token, parses the ProblemDetails
 //               error format, and surfaces the server's own message so that no
 //               business rule ever has to be restated in the user interface.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 // Read once at module load. Vite substitutes this at build time.

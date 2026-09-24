@@ -4,8 +4,6 @@
 // Description : Hook for reading the authentication state. Kept in its own file
 //               so the context module exports only components, which keeps the
 //               React fast refresh behaviour reliable during development.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useContext } from 'react'

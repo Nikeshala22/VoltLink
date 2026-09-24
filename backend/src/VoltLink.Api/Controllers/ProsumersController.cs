@@ -5,8 +5,7 @@
 // Description : Management of solar prosumer accounts, keyed by NIC. Serves the
 //               back-office prosumer screens, the pending activation list and
 //               the self service profile actions of the Android application.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Authorization;

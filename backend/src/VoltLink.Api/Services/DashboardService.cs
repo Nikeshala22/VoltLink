@@ -6,8 +6,7 @@
 //               grid operator dashboard. Every figure is calculated here from
 //               live data, so neither client aggregates anything itself and no
 //               value is ever hard coded in a screen.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Dtos;

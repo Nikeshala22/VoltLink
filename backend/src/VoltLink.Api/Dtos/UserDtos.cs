@@ -6,8 +6,7 @@
 //               These types exist so that MongoDB documents are never exposed
 //               directly: the password hash, for example, can never leak into
 //               a response because it is not part of any response contract.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using System.ComponentModel.DataAnnotations;

@@ -4,8 +4,6 @@
 // Description : Hook for reading and changing the theme. Kept separate from the
 //               provider so that module exports only components, which keeps
 //               React fast refresh reliable during development.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useContext } from 'react'

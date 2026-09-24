@@ -5,8 +5,7 @@
 // Description : Creates the very first Backoffice account when the users
 //               collection contains none. Without this there would be no way
 //               to sign in to the web application on a fresh database.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson;

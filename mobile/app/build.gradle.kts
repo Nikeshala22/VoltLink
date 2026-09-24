@@ -4,8 +4,7 @@
 // Description : Build configuration for the Android application. Reads the
 //               Google Maps key from local.properties so it is never committed,
 //               and exposes the Web API address as a build constant.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 import java.io.FileInputStream

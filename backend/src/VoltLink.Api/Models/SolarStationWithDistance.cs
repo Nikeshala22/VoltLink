@@ -5,8 +5,7 @@
 // Description : A station carrying the distance calculated by the MongoDB
 //               $geoNear aggregation stage. Used only as the result shape of
 //               the nearby stations query.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson.Serialization.Attributes;

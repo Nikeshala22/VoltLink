@@ -4,8 +4,8 @@
 // Module      : Repositories
 // Description : MongoDB implementation of IStationRepository, including the
 //               $geoNear aggregation that powers the nearby stations map.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
+
 // -----------------------------------------------------------------------------
 
 using System.Text.RegularExpressions;

@@ -5,8 +5,7 @@
 // Description : Data access contract for the "energyBookingSlots" collection,
 //               including the atomic capacity operations that make concurrent
 //               booking of the last free place safe.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

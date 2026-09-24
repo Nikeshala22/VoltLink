@@ -8,8 +8,7 @@
 //               overbooked, only active prosumers and stations may trade, and
 //               an approved booking carries a single use QR token that a grid
 //               operator verifies against the server before completing it.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23211414   Ama B L N S
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson;

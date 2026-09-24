@@ -5,8 +5,7 @@
 // Description : Conversion between the station and slot storage documents and
 //               their client facing contracts, including translation of the
 //               GeoJSON point into plain latitude and longitude values.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

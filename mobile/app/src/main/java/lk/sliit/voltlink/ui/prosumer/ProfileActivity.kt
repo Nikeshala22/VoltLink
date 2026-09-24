@@ -7,8 +7,7 @@
 //               The request is only a flag: the specification requires that
 //               deactivation and reactivation are carried out by a back-office
 //               officer, so this screen never deactivates anything itself.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

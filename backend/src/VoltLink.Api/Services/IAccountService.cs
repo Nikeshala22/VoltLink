@@ -6,8 +6,7 @@
 //               business logic. Every rule about who may register, who may be
 //               activated and who may sign in is implemented behind this
 //               interface, never in a controller or in a client.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Dtos;

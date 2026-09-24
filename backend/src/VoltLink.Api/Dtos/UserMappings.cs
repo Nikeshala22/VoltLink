@@ -5,8 +5,7 @@
 // Description : Conversion from the User storage document to the UserResponse
 //               contract. Kept in one place so that no endpoint can
 //               accidentally return the password hash.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

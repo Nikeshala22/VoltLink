@@ -8,8 +8,7 @@
 //               signed by the service, and checked by the service again when a
 //               grid operator scans it, so nothing about its validity is
 //               decided on the device.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.util

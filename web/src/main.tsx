@@ -3,8 +3,6 @@
 // Project     : VoltLink Web - Smart Solar Microgrid Trading System
 // Description : Browser entry point. Mounts the React tree and installs the
 //               router and the authentication provider around it.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { StrictMode } from 'react'

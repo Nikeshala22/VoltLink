@@ -5,8 +5,7 @@
 // Description : Helper methods for reading the identity and role of the caller
 //               out of the validated JWT, so controllers do not repeat claim
 //               lookup code and ownership checks stay consistent.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23355524   M D L Perera 
 // -----------------------------------------------------------------------------
 
 using System.Security.Claims;

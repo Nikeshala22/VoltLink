@@ -5,8 +5,7 @@
 // Description : MongoDB document for the "energyBookingSlots" collection. Each
 //               document is one bookable time window at one solar station,
 //               together with how many prosumers may book it.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : <IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson;

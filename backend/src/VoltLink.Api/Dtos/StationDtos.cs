@@ -6,8 +6,7 @@
 //               endpoints. Latitude and longitude are exposed as plain numbers
 //               so that neither client has to understand the GeoJSON layout
 //               used for storage.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using System.ComponentModel.DataAnnotations;

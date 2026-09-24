@@ -5,8 +5,7 @@
 //               operators. Every figure shown here is read from the Web API,
 //               which computes the counts; nothing on this page is calculated
 //               in the browser or hard coded.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from 'react'

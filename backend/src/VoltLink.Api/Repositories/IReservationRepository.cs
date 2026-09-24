@@ -5,8 +5,7 @@
 // Description : Data access contract for the "energyReservations" collection,
 //               covering booking storage, the filtered searches behind the
 //               booking views, and the counts behind the dashboards.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23211414   Ama B L N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

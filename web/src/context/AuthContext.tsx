@@ -5,8 +5,6 @@
 //               the session on page load. The only rule this client applies is
 //               "is there a valid token"; every permission decision is still
 //               made and enforced by the Web API.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'

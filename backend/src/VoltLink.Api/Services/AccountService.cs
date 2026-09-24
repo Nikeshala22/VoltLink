@@ -6,8 +6,7 @@
 //               unique NIC and email, inactive accounts cannot sign in, mobile
 //               registrations start inactive awaiting back-office activation,
 //               and only a back-office officer may reactivate an account.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 using MongoDB.Bson;

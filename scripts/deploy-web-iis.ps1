@@ -6,8 +6,7 @@
                beside the Web API. Once this has run, the whole system is
                served by IIS and nothing has to be started by hand: IIS is a
                Windows service and starts with the machine.
- Author      : <IT Number - Member Name>
- Created     : 2026-09-03
+ 
 
  MUST BE RUN FROM AN ELEVATED POWERSHELL WINDOW ("Run as administrator").
 ------------------------------------------------------------------------------

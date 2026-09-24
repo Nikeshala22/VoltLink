@@ -5,8 +5,7 @@
 // Description : Contract for solar microgrid node business logic, including
 //               the rule that a station holding active reservations may not
 //               be deactivated.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Dtos;

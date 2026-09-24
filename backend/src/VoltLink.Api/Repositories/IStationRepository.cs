@@ -4,8 +4,7 @@
 // Module      : Repositories
 // Description : Data access contract for the "solarStationInfo" collection,
 //               including the geospatial search used by the Android map.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Models;

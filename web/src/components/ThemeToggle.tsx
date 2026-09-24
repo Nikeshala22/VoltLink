@@ -3,8 +3,6 @@
 // Project     : VoltLink Web - Smart Solar Microgrid Trading System
 // Description : Three way switch between the light theme, the dark theme and
 //               following the operating system.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useTheme } from '../context/useTheme'

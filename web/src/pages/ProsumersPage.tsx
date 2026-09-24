@@ -5,8 +5,6 @@
 //               the accounts; back-office officers create them, edit them and
 //               control activation. Only a back-office officer can reactivate a
 //               deactivated account, which the service enforces.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from 'react'

@@ -7,8 +7,6 @@
 //               operating system. The choice is remembered per browser, and
 //               while "system" is selected the page keeps following the system
 //               even if it changes while the tab is open.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'

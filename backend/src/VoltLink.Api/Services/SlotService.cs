@@ -7,8 +7,7 @@
 //               with another window at the same station, cannot have its
 //               capacity cut below what is already booked, and cannot be
 //               deleted while prosumers still hold reservations against it.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
+// Author      : IT23307308  Madawalage N S
 // -----------------------------------------------------------------------------
 
 using VoltLink.Api.Dtos;
