@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { usersApi } from '../api/resources'
-import type { CreateStaffUserPayload } from '../api/resources'
+import type { CreateStaffUserPayload, UpdateUserPayload } from '../api/resources'
 import { ApiError } from '../api/client'
 import { useAuth } from '../context/useAuth'
 import {
@@ -51,6 +51,11 @@ export default function UsersPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [form, setForm] = useState(BLANK_FORM)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [editForm, setEditForm] = useState<UpdateUserPayload>({
+    fullName: '',
+    phone: '',
+  })
   const [isSaving, setIsSaving] = useState(false)
 
   /**
@@ -95,6 +100,39 @@ export default function UsersPage() {
       await load()
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Could not create the account.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  /**
+   * Opens the edit modal populated with an existing staff user's details.
+   */
+  function openEdit(user: User) {
+    setEditingUser(user)
+    setEditForm({
+      fullName: user.fullName,
+      phone: user.phone ?? '',
+    })
+    setError(null)
+  }
+
+  /**
+   * Updates an existing staff user's profile details.
+   */
+  async function handleUpdate(event: FormEvent) {
+    event.preventDefault()
+    if (!editingUser) return
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      await usersApi.update(editingUser.id, editForm)
+      setNotice(`${editingUser.fullName} was updated.`)
+      setEditingUser(null)
+      await load()
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'Could not update user.')
     } finally {
       setIsSaving(false)
     }
@@ -190,6 +228,13 @@ export default function UsersPage() {
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <RoleBadge role={u.role} />
+                    <button
+                      type="button"
+                      onClick={() => openEdit(u)}
+                      className="btn-secondary btn-sm"
+                    >
+                      Edit
+                    </button>
                     {u.id !== currentUser?.id && (
                       <button
                         type="button"
@@ -234,17 +279,26 @@ export default function UsersPage() {
                       <ActiveBadge isActive={u.isActive} />
                     </td>
                     <td className="text-right">
-                      {/* Deactivating your own account would immediately lock
-                          you out, so the option is withheld. */}
-                      {u.id !== currentUser?.id && (
+                      <div className="flex justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() => void handleToggleActive(u)}
-                          className={u.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
+                          onClick={() => openEdit(u)}
+                          className="btn-secondary btn-sm"
                         >
-                          {u.isActive ? 'Deactivate' : 'Activate'}
+                          Edit
                         </button>
-                      )}
+                        {/* Deactivating your own account would immediately lock
+                            you out, so the option is withheld. */}
+                        {u.id !== currentUser?.id && (
+                          <button
+                            type="button"
+                            onClick={() => void handleToggleActive(u)}
+                            className={u.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
+                          >
+                            {u.isActive ? 'Deactivate' : 'Activate'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -332,6 +386,74 @@ export default function UsersPage() {
             Only these two roles can be created here. Prosumer accounts are keyed by NIC and
             are managed on the Prosumers screen.
           </p>
+        </form>
+      </Modal>
+
+      <Modal
+        title={`Edit User (${editingUser?.fullName ?? ''})`}
+        isOpen={editingUser !== null}
+        onClose={() => setEditingUser(null)}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setEditingUser(null)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="edit-user-form"
+              disabled={isSaving}
+              className="btn-primary"
+            >
+              {isSaving ? 'Saving…' : 'Save changes'}
+            </button>
+          </>
+        }
+      >
+        <form id="edit-user-form" onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <label className="field-label">Email</label>
+            <input
+              disabled
+              value={editingUser?.email ?? ''}
+              className="field-input opacity-70"
+            />
+            <p className="mt-1 text-xs text-ink-400">
+              Email is the login identifier and cannot be changed.
+            </p>
+          </div>
+
+          <div>
+            <label className="field-label">Role</label>
+            <input
+              disabled
+              value={editingUser?.role === 'GridOperator' ? 'Grid Operator' : (editingUser?.role ?? '')}
+              className="field-input opacity-70"
+            />
+          </div>
+
+          <div>
+            <label className="field-label">Full name</label>
+            <input
+              required
+              value={editForm.fullName}
+              onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+              className="field-input"
+            />
+          </div>
+
+          <div>
+            <label className="field-label">Phone</label>
+            <input
+              value={editForm.phone ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              className="field-input"
+              placeholder="+94 77 123 4567"
+            />
+          </div>
         </form>
       </Modal>
     </>

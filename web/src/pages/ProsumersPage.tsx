@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { prosumersApi } from '../api/resources'
-import type { CreateProsumerPayload } from '../api/resources'
+import type { CreateProsumerPayload, UpdateUserPayload } from '../api/resources'
 import { ApiError } from '../api/client'
 import { useAuth } from '../context/useAuth'
 import {
@@ -53,6 +53,12 @@ export default function ProsumersPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [form, setForm] = useState(BLANK_FORM)
+  const [editingProsumer, setEditingProsumer] = useState<User | null>(null)
+  const [editForm, setEditForm] = useState<UpdateUserPayload>({
+    fullName: '',
+    phone: '',
+    address: '',
+  })
   const [isSaving, setIsSaving] = useState(false)
 
   /**
@@ -97,6 +103,40 @@ export default function ProsumersPage() {
     } catch (caught) {
       // A NIC or email already in use is rejected by the service.
       setError(caught instanceof ApiError ? caught.message : 'Could not register the prosumer.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  /**
+   * Opens the edit modal populated with an existing prosumer's details.
+   */
+  function openEdit(prosumer: User) {
+    setEditingProsumer(prosumer)
+    setEditForm({
+      fullName: prosumer.fullName,
+      phone: prosumer.phone ?? '',
+      address: prosumer.address ?? '',
+    })
+    setError(null)
+  }
+
+  /**
+   * Updates an existing prosumer's profile details.
+   */
+  async function handleUpdate(event: FormEvent) {
+    event.preventDefault()
+    if (!editingProsumer) return
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      await prosumersApi.update(editingProsumer.id, editForm)
+      setNotice(`Prosumer ${editingProsumer.id} was updated.`)
+      setEditingProsumer(null)
+      await load()
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'Could not update prosumer profile.')
     } finally {
       setIsSaving(false)
     }
@@ -196,13 +236,22 @@ export default function ProsumersPage() {
                   <p className="text-xs text-ink-400">{prosumer.phone ?? '—'}</p>
 
                   {isBackoffice && (
-                    <button
-                      type="button"
-                      onClick={() => void handleToggleActive(prosumer)}
-                      className={`mt-3 ${prosumer.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}`}
-                    >
-                      {prosumer.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(prosumer)}
+                        className="btn-secondary btn-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleToggleActive(prosumer)}
+                        className={prosumer.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
+                      >
+                        {prosumer.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}
@@ -243,13 +292,22 @@ export default function ProsumersPage() {
                     <td>
                       <div className="flex justify-end gap-2">
                         {isBackoffice && (
-                          <button
-                            type="button"
-                            onClick={() => void handleToggleActive(p)}
-                            className={p.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
-                          >
-                            {p.isActive ? 'Deactivate' : 'Activate'}
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => openEdit(p)}
+                              className="btn-secondary btn-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleToggleActive(p)}
+                              className={p.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
+                            >
+                              {p.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -355,6 +413,84 @@ export default function ProsumersPage() {
             Prosumers who register themselves from the mobile application always arrive
             inactive and appear under Pending Activations.
           </p>
+        </form>
+      </Modal>
+
+      <Modal
+        title={`Edit Prosumer (${editingProsumer?.id ?? ''})`}
+        isOpen={editingProsumer !== null}
+        onClose={() => setEditingProsumer(null)}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setEditingProsumer(null)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="edit-prosumer-form"
+              disabled={isSaving}
+              className="btn-primary"
+            >
+              {isSaving ? 'Saving…' : 'Save changes'}
+            </button>
+          </>
+        }
+      >
+        <form id="edit-prosumer-form" onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <label className="field-label">NIC (primary key)</label>
+            <input
+              disabled
+              value={editingProsumer?.id ?? ''}
+              className="field-input font-mono opacity-70"
+            />
+            <p className="mt-1 text-xs text-ink-400">
+              National Identity Card number is the primary key and cannot be changed.
+            </p>
+          </div>
+
+          <div>
+            <label className="field-label">Email</label>
+            <input
+              disabled
+              value={editingProsumer?.email ?? ''}
+              className="field-input opacity-70"
+            />
+          </div>
+
+          <div>
+            <label className="field-label">Full name</label>
+            <input
+              required
+              value={editForm.fullName}
+              onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+              className="field-input"
+            />
+          </div>
+
+          <div>
+            <label className="field-label">Phone</label>
+            <input
+              value={editForm.phone ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              className="field-input"
+              placeholder="+94 77 123 4567"
+            />
+          </div>
+
+          <div>
+            <label className="field-label">Property address</label>
+            <input
+              value={editForm.address ?? ''}
+              onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+              className="field-input"
+              placeholder="Address with solar array installation"
+            />
+          </div>
         </form>
       </Modal>
     </>
