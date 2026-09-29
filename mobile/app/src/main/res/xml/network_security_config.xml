@@ -24,6 +24,7 @@
              refused with a cleartext error before the request is sent. -->
         <domain includeSubdomains="false">192.168.1.167</domain>
         <domain includeSubdomains="false">192.168.1.190</domain>
+        <domain includeSubdomains="false">192.168.8.199</domain>
 
         <!-- Loopback, for a service reached through a port forward. -->
         <domain includeSubdomains="false">localhost</domain>

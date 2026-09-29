@@ -1,0 +1,76 @@
+# =============================================================================
+# .NET / C# Backend .gitignore - VoltLink
+# =============================================================================
+
+# Build results and intermediate output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+publish/
+dist/
+
+# Architecture / Platform specific build folders
+[Xx]64/
+[Xx]86/
+[Aa]rm/
+[Aa]rm64/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+# Visual Studio Code & JetBrains Rider
+.vscode/
+.idea/
+*.DotSettings.user
+
+# NuGet packages and caches
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+
+# Test results and code coverage
+[Tt]est[Rr]esult*/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+
+# Diagnostic, crash dumps, and profiler traces
+*.log
+*.dmp
+*.mdmp
+*.crash
+*.vstest
+
+# Publish profiles (user-specific settings)
+*.pubxml.user
+*.publishsettings
+
+# Sensitive configuration and environment secrets
+appsettings.Production.json
+appsettings.*.local.json
+appsettings.local.json
+*.secrets.json
+secrets.json
+appsettings.Production.json
+*.secrets.json
+appsettings.Development.json
+appsettings.json
+
+# Operating System files
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+.DS_Store
+.AppleDouble
+.LSOverride
