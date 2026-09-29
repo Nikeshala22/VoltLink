@@ -141,7 +141,10 @@ class OperatorHomeActivity : AppCompatActivity() {
                 binding.tileStations.textTileValue.text = dashboard.activeStationCount.toString()
             } catch (error: ApiException) {
                 if (error.isUnauthorised) {
-                    signOut()
+                    // ApiClient has already discarded the session and opened the
+                    // sign in screen, so this screen only has to close. Opening
+                    // sign in again here would stack a second copy of it.
+                    finish()
                     return@launch
                 }
 
@@ -164,6 +167,10 @@ class OperatorHomeActivity : AppCompatActivity() {
             onBusy = { busy ->
                 binding.progress.visibility = if (busy) View.VISIBLE else View.GONE
                 binding.buttonScan.isEnabled = !busy
+
+                // Both routes into verification are locked, or submitting a
+                // typed token twice opened two copies of the result screen.
+                binding.buttonEnterToken.isEnabled = !busy
             },
             onError = { message ->
                 binding.textError.text = message

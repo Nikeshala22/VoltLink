@@ -12,22 +12,17 @@
 
 package lk.sliit.voltlink.util
 
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 
 object Formatters {
 
-    // The service sends timestamps with or without fractional seconds
-    // depending on the value, so both shapes are attempted in turn.
-    private val UTC_PATTERNS = listOf(
-        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-        "yyyy-MM-dd'T'HH:mm:ssXXX"
-    )
+    // An ISO 8601 timestamp as .NET writes it: whole seconds, then an optional
+    // fraction of any length, then an optional zone.
+    private val ISO_TIMESTAMP =
+        Regex("""^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})?$""")
 
     /**
      * Parses a UTC timestamp from the API into a Date, or null when the value
@@ -36,19 +31,27 @@ object Formatters {
     fun parseUtc(value: String?): Date? {
         if (value.isNullOrBlank()) return null
 
-        for (pattern in UTC_PATTERNS) {
-            try {
-                val format = SimpleDateFormat(pattern, Locale.UK)
+        val match = ISO_TIMESTAMP.matchEntire(value.trim()) ?: return null
+        val (wholeSeconds, fraction, zone) = match.destructured
 
-                // The patterns ending in 'Z' treat the marker as a literal, so
-                // the zone has to be set explicitly or the device's own zone
-                // would be assumed and every time would be wrong.
-                format.timeZone = TimeZone.getTimeZone("UTC")
+        // The service writes as many fractional digits as the value holds, up
+        // to seven. SimpleDateFormat has no field for a fraction: "S" counts
+        // milliseconds, so ".5651093" would be read as 5,651,093 ms and move
+        // the time on by over an hour and a half. The fraction is therefore
+        // cut or padded to exactly three digits before parsing.
+        val millis = fraction.padEnd(3, '0').take(3)
 
-                return format.parse(value)
-            } catch (ignored: Exception) {
-                // Try the next pattern.
-            }
+        // A value with no zone marker is still UTC, because the service stores
+        // and returns every time in UTC.
+        val offset = if (zone.isEmpty() || zone == "Z") "+00:00" else zone
+
+        try {
+            val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.UK)
+            format.isLenient = false
+
+            return format.parse("$wholeSeconds.$millis$offset")
+        } catch (ignored: ParseException) {
+            // Shaped like a timestamp but not a real one, such as month 13.
         }
 
         return null

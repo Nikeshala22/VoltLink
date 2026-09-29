@@ -1,7 +1,10 @@
 # ---- .NET ----
 bin/
 obj/
+logs/
+TestResults/
 *.user
+*.userprefs
 *.suo
 .vs/
 
@@ -34,6 +37,8 @@ Thumbs.db
 # ---- Secrets: never commit real credentials ----
 appsettings.Production.json
 *.secrets.json
+appsettings.Development.json
+appsettings.json
 
 # ---- publish output ----
 publish/

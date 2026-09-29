@@ -147,7 +147,10 @@ class ProsumerHomeActivity : AppCompatActivity() {
                 // else is reported without throwing the screen away, so the
                 // figures already on display stay readable.
                 if (error.isUnauthorised) {
-                    signOut()
+                    // ApiClient has already discarded the session and opened the
+                    // sign in screen, so this screen only has to close. Opening
+                    // sign in again here would stack a second copy of it.
+                    finish()
                     return@launch
                 }
 

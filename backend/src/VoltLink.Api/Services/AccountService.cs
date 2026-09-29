@@ -74,24 +74,46 @@ public class AccountService : IAccountService
     private async Task<UserResponse> CreateProsumerInternalAsync(
         RegisterProsumerRequest request, bool activate, CancellationToken cancellationToken)
     {
-        var nic = request.Nic.Trim().ToUpperInvariant();
-        var email = request.Email.Trim().ToLowerInvariant();
+        // Inline comment: Trim and normalize identifiers for consistent unique index lookup.
+        var nic = request.Nic?.Trim().ToUpperInvariant() ?? string.Empty;
+        var email = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
 
-      
-     
+        // Inline comment: Validate mandatory fields before persistence.
+        if (string.IsNullOrWhiteSpace(nic))
+        {
+            throw new ValidationException("NIC is required.", ErrorCodes.ValidationFailed);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ValidationException("Full name is required.", ErrorCodes.ValidationFailed);
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new ValidationException("Email is required.", ErrorCodes.ValidationFailed);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+        {
+            throw new ValidationException("Password must be at least 6 characters.", ErrorCodes.ValidationFailed);
+        }
+
+        // The NIC is the primary key, so an existing document with that key
+        // means this person is already registered.
         var existing = await _users.GetByIdAsync(nic, cancellationToken);
         if (existing is not null)
         {
             throw new ConflictException(
                 ErrorCodes.NicAlreadyRegistered,
-                $"A prosumer is already registered with NIC {nic}.");
+                $"A prosumer is already registered with NIC '{nic}'.");
         }
 
         if (await _users.EmailExistsAsync(email, cancellationToken: cancellationToken))
         {
             throw new ConflictException(
                 ErrorCodes.EmailAlreadyUsed,
-                $"The email address {email} is already in use.");
+                $"The email address '{email}' is already in use by another account.");
         }
 
         var now = DateTime.UtcNow;
@@ -120,20 +142,38 @@ public class AccountService : IAccountService
     public async Task<UserResponse> CreateStaffUserAsync(
         CreateStaffUserRequest request, CancellationToken cancellationToken = default)
     {
+        // Inline comment: Validate mandatory fields before creating staff account.
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ValidationException("Full name is required.", ErrorCodes.ValidationFailed);
+        }
+
+        var email = request.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new ValidationException("Email is required.", ErrorCodes.ValidationFailed);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+        {
+            throw new ValidationException("Password must be at least 6 characters.", ErrorCodes.ValidationFailed);
+        }
+
+        // Only the two web application roles may be created here. A prosumer
+        // must be created through the prosumer endpoint so that a NIC is
+        // always supplied as the primary key.
         if (request.Role != UserRoles.Backoffice && request.Role != UserRoles.GridOperator)
         {
             throw new ValidationException(
-                $"Role must be either {UserRoles.Backoffice} or {UserRoles.GridOperator}.",
+                $"Role must be either '{UserRoles.Backoffice}' or '{UserRoles.GridOperator}'.",
                 ErrorCodes.RoleNotAllowed);
         }
-
-        var email = request.Email.Trim().ToLowerInvariant();
 
         if (await _users.EmailExistsAsync(email, cancellationToken: cancellationToken))
         {
             throw new ConflictException(
                 ErrorCodes.EmailAlreadyUsed,
-                $"The email address {email} is already in use.");
+                $"The email address '{email}' is already in use by another account.");
         }
 
         var now = DateTime.UtcNow;
@@ -187,7 +227,36 @@ public class AccountService : IAccountService
       public async Task<UserResponse> UpdateAsync(
         string id, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
+        // Inline comment: Validate full name parameter before updating.
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ValidationException("Full name is required.", ErrorCodes.ValidationFailed);
+        }
+
         var user = await GetRequiredAsync(id, cancellationToken);
+
+        // Inline comment: Validate role update if requested.
+        if (!string.IsNullOrWhiteSpace(request.Role))
+        {
+            if (user.Role == UserRoles.Prosumer && request.Role != UserRoles.Prosumer)
+            {
+                throw new ValidationException(
+                    "Cannot change the role of a solar prosumer account.",
+                    ErrorCodes.RoleNotAllowed);
+            }
+
+            if (user.Role != UserRoles.Prosumer)
+            {
+                if (request.Role != UserRoles.Backoffice && request.Role != UserRoles.GridOperator)
+                {
+                    throw new ValidationException(
+                        $"Role must be either '{UserRoles.Backoffice}' or '{UserRoles.GridOperator}'.",
+                        ErrorCodes.RoleNotAllowed);
+                }
+
+                user.Role = request.Role;
+            }
+        }
 
         user.FullName = request.FullName.Trim();
         user.Phone = request.Phone?.Trim();
@@ -195,6 +264,7 @@ public class AccountService : IAccountService
         user.UpdatedAtUtc = DateTime.UtcNow;
 
         await _users.ReplaceAsync(user, cancellationToken);
+        _logger.LogInformation("Account {Id} profile updated.", id);
         return user.ToResponse();
     }
 
@@ -202,6 +272,7 @@ public class AccountService : IAccountService
     public async Task<UserResponse> ActivateAsync(
         string id, CancellationToken cancellationToken = default)
     {
+        // Inline comment: Load required user and ensure activation state.
         var user = await GetRequiredAsync(id, cancellationToken);
 
         user.IsActive = true;
@@ -219,7 +290,20 @@ public class AccountService : IAccountService
     public async Task<UserResponse> DeactivateAsync(
         string id, CancellationToken cancellationToken = default)
     {
+        // Inline comment: Load required user and check administrator deactivation safety.
         var user = await GetRequiredAsync(id, cancellationToken);
+
+        if (user.Role == UserRoles.Backoffice)
+        {
+            var activeAdmins = await _users.CountAsync(
+                role: UserRoles.Backoffice, isActive: true, cancellationToken: cancellationToken);
+            if (activeAdmins <= 1)
+            {
+                throw new BusinessRuleViolationException(
+                    ErrorCodes.RoleNotAllowed,
+                    "Cannot deactivate the only active Backoffice administrator.");
+            }
+        }
 
         user.IsActive = false;
 

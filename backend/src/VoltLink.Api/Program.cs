@@ -213,6 +213,39 @@ builder.Services.AddControllers(options =>
     // renamed.
     options.SuppressAsyncSuffixInActionNames = false;
 });
+
+// Configure validation error formatting to return unified ProblemDetails
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+{
+    // Inline comment: Format model validation errors into consistent ProblemDetails.
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value!.Errors.Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? "Invalid value." : e.ErrorMessage).ToArray()
+            );
+
+        var firstErrorMessage = errors.Values.SelectMany(v => v).FirstOrDefault()
+            ?? "Validation failed for one or more fields.";
+
+        var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = ErrorCodes.ValidationFailed,
+            Detail = firstErrorMessage,
+            Instance = context.HttpContext.Request.Path
+        };
+        problem.Extensions["errorCode"] = ErrorCodes.ValidationFailed;
+        problem.Extensions["errors"] = errors;
+
+        return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(problem)
+        {
+            ContentTypes = { "application/problem+json" }
+        };
+    };
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

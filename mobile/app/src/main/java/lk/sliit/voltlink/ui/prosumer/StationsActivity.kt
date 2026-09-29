@@ -100,8 +100,19 @@ class StationsActivity : AppCompatActivity() {
                     val nearby = ApiClient.call {
                         AppServices.api.nearbyStations(position.latitude, position.longitude)
                     }
-                    AppServices.store.replaceStations(nearby.map { it.station })
-                    nearby.map { StationRow(it.station, it.distanceMeters) }
+
+                    if (nearby.isEmpty()) {
+                        // Nothing lies within range of the handset, which is
+                        // also what an emulator reports from its default
+                        // position in California. The full list is shown
+                        // rather than telling the user there are no nodes.
+                        val stations = ApiClient.call { AppServices.api.listStations() }
+                        AppServices.store.replaceStations(stations)
+                        stations.map { StationRow(it, null) }
+                    } else {
+                        AppServices.store.replaceStations(nearby.map { it.station })
+                        nearby.map { StationRow(it.station, it.distanceMeters) }
+                    }
                 }
 
                 showRows(rows)

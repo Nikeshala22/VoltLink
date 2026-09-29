@@ -7,12 +7,14 @@ const TOKEN_KEY = 'voltlink.token'
 export class ApiError extends Error {
   public readonly status: number
   public readonly code: string
+  public readonly errors?: Record<string, string[]>
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, errors?: Record<string, string[]>) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.errors = errors
   }
 
   
@@ -55,12 +57,14 @@ interface ProblemDetails {
   status?: number
   detail?: string
   errorCode?: string
+  errors?: Record<string, string[]>
 }
 
 
 async function toApiError(response: Response): Promise<ApiError> {
   let code = 'UNKNOWN'
   let message = `Request failed with status ${response.status}.`
+  let validationErrors: Record<string, string[]> | undefined
 
   
   try {
@@ -69,7 +73,19 @@ async function toApiError(response: Response): Promise<ApiError> {
     if (problem.errorCode) code = problem.errorCode
     else if (problem.title) code = problem.title
 
-    if (problem.detail) message = problem.detail
+    if (problem.errors && typeof problem.errors === 'object') {
+      validationErrors = problem.errors
+      const messages = Object.values(problem.errors).flat().filter(Boolean)
+      if (messages.length > 0) {
+        message = messages.join(' ')
+      }
+    }
+
+    if (problem.detail) {
+      message = problem.detail
+    } else if (!validationErrors && problem.title) {
+      message = problem.title
+    }
   } catch {
     if (response.status === 401) {
       message = 'Your session has expired. Please sign in again.'
@@ -80,7 +96,7 @@ async function toApiError(response: Response): Promise<ApiError> {
     }
   }
 
-  return new ApiError(response.status, code, message)
+  return new ApiError(response.status, code, message, validationErrors)
 }
 
 

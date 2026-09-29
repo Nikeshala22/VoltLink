@@ -123,12 +123,18 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             try {
                 val position = LocationHelper.currentPosition(this@StationMapActivity)
 
-                val stations = if (position == null) {
-                    ApiClient.call { AppServices.api.listStations() }
+                val nearby = if (position == null) {
+                    emptyList()
                 } else {
                     ApiClient.call {
                         AppServices.api.nearbyStations(position.latitude, position.longitude)
                     }.map { it.station }
+                }
+
+                // With no position, or nothing in range of it, every node is
+                // plotted so the map is never left empty while nodes exist.
+                val stations = nearby.ifEmpty {
+                    ApiClient.call { AppServices.api.listStations() }
                 }
 
                 AppServices.store.replaceStations(stations)
@@ -199,15 +205,27 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        val onlyPoint = LatLng(stations.first().latitude, stations.first().longitude)
+
         if (focusPoint != null) {
             // The user asked for one particular node, so open on it.
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(focusPoint, 15f))
+        } else if (stations.size == 1) {
+            // Bounds around a single point have no size, and framing them zooms
+            // the map in as far as it goes, so one node gets a street level view.
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(onlyPoint, 14f))
         } else {
             // Otherwise frame every node, with a margin so none sits under the
             // edge of the screen.
-            googleMap.moveCamera(
-                CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), MAP_PADDING_PX)
-            )
+            try {
+                googleMap.moveCamera(
+                    CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), MAP_PADDING_PX)
+                )
+            } catch (notLaidOut: IllegalStateException) {
+                // Thrown when the map view has not been measured yet. Centring
+                // on the first node is a reasonable view in the meantime.
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(onlyPoint, 11f))
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { usersApi } from '../api/resources'
-import type { CreateStaffUserPayload } from '../api/resources'
+import type { CreateStaffUserPayload, UpdateUserPayload } from '../api/resources'
 import { ApiError } from '../api/client'
 import { useAuth } from '../context/useAuth'
 import {
@@ -40,6 +40,15 @@ export default function UsersPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [form, setForm] = useState(BLANK_FORM)
+  const [modalError, setModalError] = useState<string | null>(null)
+
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [editForm, setEditForm] = useState<UpdateUserPayload>({
+    fullName: '',
+    phone: '',
+    role: 'GridOperator',
+  })
+  const [editModalError, setEditModalError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
 
@@ -68,17 +77,96 @@ export default function UsersPage() {
  
   async function handleCreate(event: FormEvent) {
     event.preventDefault()
-    setIsSaving(true)
+    setModalError(null)
     setError(null)
 
+    const trimmedName = form.fullName.trim()
+    const trimmedEmail = form.email.trim()
+
+    if (trimmedName.length < 2) {
+      setModalError('Full name must be at least 2 characters long.')
+      return
+    }
+    if (!trimmedEmail || !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setModalError('Please enter a valid email address.')
+      return
+    }
+    if (form.role !== 'Backoffice' && form.role !== 'GridOperator') {
+      setModalError('Please select a valid role (Back-office or Grid Operator).')
+      return
+    }
+    if (form.password.length < 6) {
+      setModalError('Password must be at least 6 characters.')
+      return
+    }
+
+    setIsSaving(true)
+
     try {
-      await usersApi.create(form)
-      setNotice(`${form.fullName} was added as a ${form.role}.`)
+      await usersApi.create({
+        ...form,
+        fullName: trimmedName,
+        email: trimmedEmail,
+        phone: form.phone?.trim() || undefined,
+      })
+      const roleName = form.role === 'Backoffice' ? 'Back-office officer' : 'Grid Operator'
+      setNotice(`${trimmedName} was created successfully as a ${roleName}.`)
       setIsFormOpen(false)
       setForm(BLANK_FORM)
       await load()
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not create the account.')
+      const message = caught instanceof ApiError ? caught.message : 'Could not create the account.'
+      setModalError(message)
+      setError(message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  /**
+   * Opens the edit modal populated with an existing staff user's details.
+   */
+  function openEdit(user: User) {
+    setEditingUser(user)
+    setEditForm({
+      fullName: user.fullName,
+      phone: user.phone ?? '',
+      role: (user.role as 'Backoffice' | 'GridOperator') || 'GridOperator',
+    })
+    setEditModalError(null)
+    setError(null)
+  }
+
+  /**
+   * Updates an existing staff user's profile details.
+   */
+  async function handleUpdate(event: FormEvent) {
+    event.preventDefault()
+    if (!editingUser) return
+
+    const trimmedName = editForm.fullName.trim()
+    if (trimmedName.length < 2) {
+      setEditModalError('Full name must be at least 2 characters long.')
+      return
+    }
+
+    setIsSaving(true)
+    setEditModalError(null)
+    setError(null)
+
+    try {
+      await usersApi.update(editingUser.id, {
+        ...editForm,
+        fullName: trimmedName,
+        phone: editForm.phone?.trim() || undefined,
+      })
+      setNotice(`${trimmedName} profile was updated successfully.`)
+      setEditingUser(null)
+      await load()
+    } catch (caught) {
+      const message = caught instanceof ApiError ? caught.message : 'Could not update user.'
+      setEditModalError(message)
+      setError(message)
     } finally {
       setIsSaving(false)
     }
@@ -131,7 +219,7 @@ export default function UsersPage() {
         <div className="card-header">
           <FilterChips
             value={roleFilter}
-            onChange={setRoleFilter}
+            onChange={(next) => setRoleFilter(next as '' | 'Backoffice' | 'GridOperator')}
             options={[
               { value: '', label: 'All' },
               { value: 'Backoffice', label: 'Back-office' },
@@ -171,6 +259,13 @@ export default function UsersPage() {
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <RoleBadge role={u.role} />
+                    <button
+                      type="button"
+                      onClick={() => openEdit(u)}
+                      className="btn-secondary btn-sm"
+                    >
+                      Edit
+                    </button>
                     {u.id !== currentUser?.id && (
                       <button
                         type="button"
@@ -215,16 +310,26 @@ export default function UsersPage() {
                       <ActiveBadge isActive={u.isActive} />
                     </td>
                     <td className="text-right">
-                      
-                      {u.id !== currentUser?.id && (
+                      <div className="flex justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() => void handleToggleActive(u)}
-                          className={u.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
+                          onClick={() => openEdit(u)}
+                          className="btn-secondary btn-sm"
                         >
-                          {u.isActive ? 'Deactivate' : 'Activate'}
+                          Edit
                         </button>
-                      )}
+                        {/* Deactivating your own account would immediately lock
+                            you out, so the option is withheld. */}
+                        {u.id !== currentUser?.id && (
+                          <button
+                            type="button"
+                            onClick={() => void handleToggleActive(u)}
+                            className={u.isActive ? 'btn-danger btn-sm' : 'btn-success btn-sm'}
+                          >
+                            {u.isActive ? 'Deactivate' : 'Activate'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -238,10 +343,20 @@ export default function UsersPage() {
       <Modal
         title="Add a system user"
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false)
+          setModalError(null)
+        }}
         footer={
           <>
-            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">
+            <button
+              type="button"
+              onClick={() => {
+                setIsFormOpen(false)
+                setModalError(null)
+              }}
+              className="btn-secondary"
+            >
               Cancel
             </button>
             <button type="submit" form="user-form" disabled={isSaving} className="btn-primary">
@@ -250,69 +365,197 @@ export default function UsersPage() {
           </>
         }
       >
-        <form id="user-form" onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="field-label">Full name</label>
-            <input
-              required
-              value={form.fullName}
-              onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              className="field-input"
-            />
-          </div>
+        <div className="space-y-4">
+          {modalError && (
+            <Alert kind="error" message={modalError} onDismiss={() => setModalError(null)} />
+          )}
 
-          <div>
-            <label className="field-label">Role</label>
-            <select
-              value={form.role}
-              onChange={(e) =>
-                setForm({ ...form, role: e.target.value as 'Backoffice' | 'GridOperator' })
-              }
-              className="field-input"
+          <form id="user-form" onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="field-label">Full name</label>
+              <input
+                required
+                minLength={2}
+                maxLength={120}
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                className="field-input"
+                placeholder="e.g. Kasun Perera"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Role</label>
+              <select
+                value={form.role}
+                onChange={(e) =>
+                  setForm({ ...form, role: e.target.value as 'Backoffice' | 'GridOperator' })
+                }
+                className="field-input"
+              >
+                <option value="GridOperator">Grid Operator</option>
+                <option value="Backoffice">Back-office</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="field-label">Email</label>
+              <input
+                required
+                type="email"
+                maxLength={120}
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="field-input"
+                placeholder="kasun@voltlink.lk"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Phone</label>
+              <input
+                type="tel"
+                maxLength={20}
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="field-input"
+                placeholder="+94 77 123 4567"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="field-label">Password</label>
+              <input
+                required
+                type="password"
+                minLength={6}
+                maxLength={100}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="field-input"
+                placeholder="At least 6 characters"
+              />
+            </div>
+
+            <p className="text-xs text-ink-400 sm:col-span-2">
+              Only these two roles can be created here. Prosumer accounts are keyed by NIC and
+              are managed on the Prosumers screen.
+            </p>
+          </form>
+        </div>
+      </Modal>
+
+      <Modal
+        title={`Edit User (${editingUser?.fullName ?? ''})`}
+        isOpen={editingUser !== null}
+        onClose={() => {
+          setEditingUser(null)
+          setEditModalError(null)
+        }}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingUser(null)
+                setEditModalError(null)
+              }}
+              className="btn-secondary"
             >
-              <option value="GridOperator">Grid Operator</option>
-              <option value="Backoffice">Back-office</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="field-label">Email</label>
-            <input
-              required
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="field-input"
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="edit-user-form"
+              disabled={isSaving}
+              className="btn-primary"
+            >
+              {isSaving ? 'Saving…' : 'Save changes'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {editModalError && (
+            <Alert
+              kind="error"
+              message={editModalError}
+              onDismiss={() => setEditModalError(null)}
             />
-          </div>
+          )}
 
-          <div>
-            <label className="field-label">Phone</label>
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="field-input"
-            />
-          </div>
+          <form id="edit-user-form" onSubmit={handleUpdate} className="space-y-4">
+            <div>
+              <label className="field-label">Email</label>
+              <input
+                disabled
+                value={editingUser?.email ?? ''}
+                className="field-input opacity-70"
+              />
+              <p className="mt-1 text-xs text-ink-400">
+                Email is the login identifier and cannot be changed.
+              </p>
+            </div>
 
-          <div className="sm:col-span-2">
-            <label className="field-label">Password</label>
-            <input
-              required
-              type="password"
-              minLength={6}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="field-input"
-              placeholder="At least 6 characters"
-            />
-          </div>
+            <div>
+              <label className="field-label">Role</label>
+              {editingUser?.id === currentUser?.id ? (
+                <>
+                  <input
+                    disabled
+                    value={
+                      editingUser?.role === 'GridOperator'
+                        ? 'Grid Operator'
+                        : (editingUser?.role ?? '')
+                    }
+                    className="field-input opacity-70"
+                  />
+                  <p className="mt-1 text-xs text-ink-400">
+                    You cannot change the role of your own signed-in account.
+                  </p>
+                </>
+              ) : (
+                <select
+                  value={editForm.role ?? editingUser?.role ?? 'GridOperator'}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      role: e.target.value as 'Backoffice' | 'GridOperator',
+                    })
+                  }
+                  className="field-input"
+                >
+                  <option value="GridOperator">Grid Operator</option>
+                  <option value="Backoffice">Back-office</option>
+                </select>
+              )}
+            </div>
 
-          <p className="text-xs text-ink-400 sm:col-span-2">
-            Only these two roles can be created here. Prosumer accounts are keyed by NIC and
-            are managed on the Prosumers screen.
-          </p>
-        </form>
+            <div>
+              <label className="field-label">Full name</label>
+              <input
+                required
+                minLength={2}
+                maxLength={120}
+                value={editForm.fullName}
+                onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                className="field-input"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Phone</label>
+              <input
+                type="tel"
+                maxLength={20}
+                value={editForm.phone ?? ''}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                className="field-input"
+                placeholder="+94 77 123 4567"
+              />
+            </div>
+          </form>
+        </div>
       </Modal>
     </>
   )

@@ -75,6 +75,11 @@ data class StoredSession(
  */
 class LocalStore(context: Context) {
 
+    // The database handle is deliberately never closed. SQLiteOpenHelper hands
+    // every caller the same connection, and the API client reads the session
+    // from it on OkHttp's own threads. Closing it after one call would pull the
+    // connection out from under a request running at the same moment, which
+    // fails with "attempt to re-open an already-closed object".
     private val helper = VoltLinkDbHelper(context)
 
     // ---------------------------------------------------------------------
@@ -97,7 +102,7 @@ class LocalStore(context: Context) {
             put(COL_SESSION_EXPIRES_AT, expiresAtUtc)
         }
 
-        helper.writableDatabase.use { db ->
+        helper.writableDatabase.let { db ->
             db.beginTransaction()
             try {
                 db.delete(TABLE_SESSION, null, null)
@@ -117,14 +122,14 @@ class LocalStore(context: Context) {
             put(COL_SESSION_ADDRESS, user.address)
         }
 
-        helper.writableDatabase.use { db ->
+        helper.writableDatabase.let { db ->
             db.update(TABLE_SESSION, values, null, null)
         }
     }
 
     /** Returns the stored session, or null when nobody is signed in. */
     fun getSession(): StoredSession? {
-        helper.readableDatabase.use { db ->
+        helper.readableDatabase.let { db ->
             db.query(TABLE_SESSION, null, null, null, null, null, null, "1").use { cursor ->
                 if (!cursor.moveToFirst()) return null
 
@@ -147,7 +152,7 @@ class LocalStore(context: Context) {
      * personal booking data is left behind for the next user of the device.
      */
     fun clearSession() {
-        helper.writableDatabase.use { db ->
+        helper.writableDatabase.let { db ->
             db.delete(TABLE_SESSION, null, null)
             db.delete(TABLE_BOOKING_CACHE, null, null)
         }
@@ -163,7 +168,7 @@ class LocalStore(context: Context) {
      * cache half written.
      */
     fun replaceStations(stations: List<StationDto>) {
-        helper.writableDatabase.use { db ->
+        helper.writableDatabase.let { db ->
             db.beginTransaction()
             try {
                 db.delete(TABLE_STATION_CACHE, null, null)
@@ -197,7 +202,7 @@ class LocalStore(context: Context) {
     fun getCachedStations(): List<StationDto> {
         val stations = mutableListOf<StationDto>()
 
-        helper.readableDatabase.use { db ->
+        helper.readableDatabase.let { db ->
             db.query(
                 TABLE_STATION_CACHE, null, null, null, null, null, "$COL_STATION_NAME ASC"
             ).use { cursor ->
@@ -236,7 +241,7 @@ class LocalStore(context: Context) {
 
     /** Replaces the cached bookings with the list just fetched. */
     fun replaceBookings(reservations: List<ReservationDto>) {
-        helper.writableDatabase.use { db ->
+        helper.writableDatabase.let { db ->
             db.beginTransaction()
             try {
                 db.delete(TABLE_BOOKING_CACHE, null, null)
@@ -293,7 +298,7 @@ class LocalStore(context: Context) {
         val selection = if (where.isEmpty()) null else where.joinToString(" AND ")
         val bookings = mutableListOf<ReservationDto>()
 
-        helper.readableDatabase.use { db ->
+        helper.readableDatabase.let { db ->
             db.query(
                 TABLE_BOOKING_CACHE, null, selection,
                 if (args.isEmpty()) null else args.toTypedArray(),
