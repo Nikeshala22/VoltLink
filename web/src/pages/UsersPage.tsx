@@ -188,7 +188,7 @@ export default function UsersPage() {
         <div className="card-header">
           <FilterChips
             value={roleFilter}
-            onChange={setRoleFilter}
+            onChange={(next) => setRoleFilter(next as '' | 'Backoffice' | 'GridOperator')}
             options={[
               { value: '', label: 'All' },
               { value: 'Backoffice', label: 'Back-office' },
