@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { prosumersApi } from "../api/resources";
 import type {
   CreateProsumerPayload,
@@ -29,7 +30,7 @@ import {
   SearchInput,
   formatDate,
 } from "../components/Ui";
-import { IconPlus } from "../components/Icons";
+import { IconInbox, IconPlus } from "../components/Icons";
 import type { User } from "../types";
 
 const BLANK_FORM: CreateProsumerPayload = {
@@ -49,7 +50,7 @@ export default function ProsumersPage() {
   const [prosumers, setProsumers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<
-    "all" | "active" | "inactive"
+    "all" | "active" | "inactive" | "closure"
   >("all");
 
   const [isLoading, setIsLoading] = useState(true);
@@ -67,10 +68,11 @@ export default function ProsumersPage() {
     address: "",
   });
   const [editModalError, setEditModalError] = useState<string | null>(null);
+  const [inspectingProsumer, setInspectingProsumer] = useState<User | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   /**
-   * Loads the prosumer list using the current search and activation filter.
+   * Loads the prosumer list using the search query.
    */
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -80,8 +82,6 @@ export default function ProsumersPage() {
       setProsumers(
         await prosumersApi.list({
           search: search.trim() || undefined,
-          isActive:
-            activeFilter === "all" ? undefined : activeFilter === "active",
         }),
       );
     } catch (caught) {
@@ -93,7 +93,7 @@ export default function ProsumersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, activeFilter]);
+  }, [search]);
 
   useEffect(() => {
     void load();
@@ -209,7 +209,9 @@ export default function ProsumersPage() {
     }
   }
 
-
+  /**
+   * Activates or deactivates an account.
+   */
   async function handleToggleActive(prosumer: User) {
     setError(null);
     setNotice(null);
@@ -233,6 +235,20 @@ export default function ProsumersPage() {
     }
   }
 
+  const counts = {
+    all: prosumers.length,
+    active: prosumers.filter((p) => p.isActive).length,
+    inactive: prosumers.filter((p) => !p.isActive).length,
+    closure: prosumers.filter((p) => p.deactivationRequested).length,
+  };
+
+  const displayedProsumers = prosumers.filter((p) => {
+    if (activeFilter === "active") return p.isActive;
+    if (activeFilter === "inactive") return !p.isActive;
+    if (activeFilter === "closure") return p.deactivationRequested;
+    return true;
+  });
+
   return (
     <>
       <PageHeader
@@ -241,17 +257,24 @@ export default function ProsumersPage() {
         description='Property owners trading energy with the microgrid, identified by NIC.'
         actions={
           isBackoffice ? (
-            <button
-              type='button'
-              onClick={() => {
-                setForm(BLANK_FORM);
-                setIsFormOpen(true);
-              }}
-              className='btn-primary'
-            >
-              <IconPlus className='h-4 w-4' />
-              Register prosumer
-            </button>
+            <div className='flex flex-wrap items-center gap-2'>
+              <Link to='/activations' className='btn-secondary'>
+                <IconInbox className='h-4 w-4' />
+                Pending Activations
+              </Link>
+              <button
+                type='button'
+                onClick={() => {
+                  setForm(BLANK_FORM);
+                  setModalError(null);
+                  setIsFormOpen(true);
+                }}
+                className='btn-primary'
+              >
+                <IconPlus className='h-4 w-4' />
+                Register prosumer
+              </button>
+            </div>
           ) : undefined
         }
       />
@@ -272,12 +295,13 @@ export default function ProsumersPage() {
           <FilterChips
             value={activeFilter}
             onChange={(next) =>
-              setActiveFilter(next as "all" | "active" | "inactive")
+              setActiveFilter(next as "all" | "active" | "inactive" | "closure")
             }
             options={[
-              { value: "all", label: "All" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
+              { value: "all", label: `All (${counts.all})` },
+              { value: "active", label: `Active (${counts.active})` },
+              { value: "inactive", label: `Inactive (${counts.inactive})` },
+              { value: "closure", label: `Closure Requests (${counts.closure})` },
             ]}
           />
 
@@ -291,15 +315,21 @@ export default function ProsumersPage() {
 
         {isLoading ? (
           <Loading />
-        ) : prosumers.length === 0 ? (
+        ) : displayedProsumers.length === 0 ? (
           <EmptyState
             title='No prosumers found'
-            hint='Try a different filter or search term.'
+            hint={
+              search
+                ? 'No prosumers match your search query.'
+                : activeFilter === 'closure'
+                ? 'No prosumers currently have an active closure request.'
+                : 'Try a different filter or search term.'
+            }
           />
         ) : (
           <>
             <ul className='divide-y divide-line md:hidden'>
-              {prosumers.map((prosumer) => (
+              {displayedProsumers.map((prosumer) => (
                 <li key={prosumer.id} className='p-4'>
                   <div className='flex items-start justify-between gap-3'>
                     <div className='min-w-0'>
@@ -325,28 +355,37 @@ export default function ProsumersPage() {
                     {prosumer.phone ?? "—"}
                   </p>
 
-                  {isBackoffice && (
-                    <div className='mt-3 flex gap-2'>
-                      <button
-                        type='button'
-                        onClick={() => openEdit(prosumer)}
-                        className='btn-secondary btn-sm'
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type='button'
-                        onClick={() => void handleToggleActive(prosumer)}
-                        className={
-                          prosumer.isActive
-                            ? "btn-danger btn-sm"
-                            : "btn-success btn-sm"
-                        }
-                      >
-                        {prosumer.isActive ? "Deactivate" : "Activate"}
-                      </button>
-                    </div>
-                  )}
+                  <div className='mt-3 flex flex-wrap gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => setInspectingProsumer(prosumer)}
+                      className='btn-secondary btn-sm'
+                    >
+                      View Details
+                    </button>
+                    {isBackoffice && (
+                      <>
+                        <button
+                          type='button'
+                          onClick={() => openEdit(prosumer)}
+                          className='btn-secondary btn-sm'
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => void handleToggleActive(prosumer)}
+                          className={
+                            prosumer.isActive
+                              ? "btn-danger btn-sm"
+                              : "btn-success btn-sm"
+                          }
+                        >
+                          {prosumer.isActive ? "Deactivate" : "Activate"}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -364,7 +403,7 @@ export default function ProsumersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {prosumers.map((p) => (
+                  {displayedProsumers.map((p) => (
                     <tr key={p.id}>
                       <td className='font-mono text-xs font-medium text-ink-900'>
                         {p.id}
@@ -389,6 +428,13 @@ export default function ProsumersPage() {
                       </td>
                       <td>
                         <div className='flex justify-end gap-2'>
+                          <button
+                            type='button'
+                            onClick={() => setInspectingProsumer(p)}
+                            className='btn-secondary btn-sm'
+                          >
+                            View
+                          </button>
                           {isBackoffice && (
                             <>
                               <button
@@ -675,6 +721,111 @@ export default function ProsumersPage() {
             </div>
           </form>
         </div>
+      </Modal>
+
+      {/* Prosumer Profile & Property Inspection Modal */}
+      <Modal
+        title={`Prosumer Profile — ${inspectingProsumer?.id ?? ""}`}
+        isOpen={inspectingProsumer !== null}
+        onClose={() => setInspectingProsumer(null)}
+        footer={
+          <div className='flex w-full items-center justify-between'>
+            <div>
+              {isBackoffice && inspectingProsumer && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    const target = inspectingProsumer;
+                    setInspectingProsumer(null);
+                    openEdit(target);
+                  }}
+                  className='btn-secondary'
+                >
+                  Edit Profile
+                </button>
+              )}
+            </div>
+            <button
+              type='button'
+              onClick={() => setInspectingProsumer(null)}
+              className='btn-primary'
+            >
+              Close
+            </button>
+          </div>
+        }
+      >
+        {inspectingProsumer && (
+          <div className='space-y-4 text-sm'>
+            <div className='rounded-lg border border-line bg-surface-subtle p-4'>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <p className='text-xs font-semibold uppercase tracking-wider text-ink-400'>
+                    National Identity Card (NIC)
+                  </p>
+                  <p className='font-mono text-base font-bold text-ink-900'>
+                    {inspectingProsumer.id}
+                  </p>
+                </div>
+                <div className='flex flex-wrap gap-1.5'>
+                  <ActiveBadge isActive={inspectingProsumer.isActive} />
+                  {inspectingProsumer.deactivationRequested && (
+                    <span className='badge bg-warn-bg text-warn-fg'>
+                      Closure requested
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className='grid gap-3 sm:grid-cols-2'>
+              <div>
+                <p className='text-xs text-ink-400'>Full Name</p>
+                <p className='font-medium text-ink-900'>
+                  {inspectingProsumer.fullName}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs text-ink-400'>System Role</p>
+                <p className='font-medium text-ink-900'>
+                  {inspectingProsumer.role}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs text-ink-400'>Email Address</p>
+                <p className='font-medium text-ink-900'>
+                  {inspectingProsumer.email}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs text-ink-400'>Contact Number</p>
+                <p className='font-medium text-ink-900'>
+                  {inspectingProsumer.phone || "Not provided"}
+                </p>
+              </div>
+              <div className='sm:col-span-2'>
+                <p className='text-xs text-ink-400'>Property Installation Address</p>
+                <p className='font-medium text-ink-900'>
+                  {inspectingProsumer.address || "No installation address registered"}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs text-ink-400'>Account Registered</p>
+                <p className='font-medium text-ink-900'>
+                  {formatDate(inspectingProsumer.createdAtUtc)}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs text-ink-400'>Grid Trading Eligibility</p>
+                <p className='font-medium text-ink-900'>
+                  {inspectingProsumer.isActive
+                    ? "Active (Eligible for Power Trading)"
+                    : "Inactive (Approval Pending / Suspended)"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );
