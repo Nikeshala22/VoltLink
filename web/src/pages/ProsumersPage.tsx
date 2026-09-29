@@ -228,7 +228,7 @@ export default function ProsumersPage() {
           <FilterChips
             value={activeFilter}
             onChange={(next) =>
-              setActiveFilter(next as "" | "all" | "active" | "inactive")
+              setActiveFilter(next as "all" | "active" | "inactive")
             }
             options={[
               { value: "all", label: "All" },
