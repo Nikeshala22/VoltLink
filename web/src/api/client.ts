@@ -25,12 +25,14 @@ const TOKEN_KEY = 'voltlink.token'
 export class ApiError extends Error {
   public readonly status: number
   public readonly code: string
+  public readonly errors?: Record<string, string[]>
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, errors?: Record<string, string[]>) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.errors = errors
   }
 
   /** True when the caller is not signed in, or the token has expired. */
@@ -75,6 +77,7 @@ interface ProblemDetails {
   status?: number
   detail?: string
   errorCode?: string
+  errors?: Record<string, string[]>
 }
 
 /**
@@ -83,6 +86,7 @@ interface ProblemDetails {
 async function toApiError(response: Response): Promise<ApiError> {
   let code = 'UNKNOWN'
   let message = `Request failed with status ${response.status}.`
+  let validationErrors: Record<string, string[]> | undefined
 
   // A failed request does not always carry a JSON body; a 401 from the
   // authentication middleware, for example, has none at all.
@@ -92,7 +96,19 @@ async function toApiError(response: Response): Promise<ApiError> {
     if (problem.errorCode) code = problem.errorCode
     else if (problem.title) code = problem.title
 
-    if (problem.detail) message = problem.detail
+    if (problem.errors && typeof problem.errors === 'object') {
+      validationErrors = problem.errors
+      const messages = Object.values(problem.errors).flat().filter(Boolean)
+      if (messages.length > 0) {
+        message = messages.join(' ')
+      }
+    }
+
+    if (problem.detail) {
+      message = problem.detail
+    } else if (!validationErrors && problem.title) {
+      message = problem.title
+    }
   } catch {
     if (response.status === 401) {
       message = 'Your session has expired. Please sign in again.'
@@ -103,7 +119,7 @@ async function toApiError(response: Response): Promise<ApiError> {
     }
   }
 
-  return new ApiError(response.status, code, message)
+  return new ApiError(response.status, code, message, validationErrors)
 }
 
 /**

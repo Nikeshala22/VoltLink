@@ -58,12 +58,15 @@ export default function ProsumersPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState(BLANK_FORM);
+  const [modalError, setModalError] = useState<string | null>(null);
+
   const [editingProsumer, setEditingProsumer] = useState<User | null>(null);
   const [editForm, setEditForm] = useState<UpdateUserPayload>({
     fullName: "",
     phone: "",
     address: "",
   });
+  const [editModalError, setEditModalError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   /**
@@ -101,25 +104,53 @@ export default function ProsumersPage() {
    */
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
-    setIsSaving(true);
+    setModalError(null);
     setError(null);
+
+    const trimmedNic = form.nic.trim().toUpperCase();
+    const trimmedName = form.fullName.trim();
+    const trimmedEmail = form.email.trim();
+
+    if (!trimmedNic || !/^[A-Z0-9]{5,20}$/.test(trimmedNic)) {
+      setModalError("NIC must be between 5 and 20 alphanumeric characters (e.g. 199912345678 or 123456789V).");
+      return;
+    }
+    if (trimmedName.length < 2) {
+      setModalError("Full name must be at least 2 characters long.");
+      return;
+    }
+    if (!trimmedEmail || !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setModalError("Please enter a valid email address.");
+      return;
+    }
+    if (form.password.length < 6) {
+      setModalError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setIsSaving(true);
 
     try {
       await prosumersApi.create({
         ...form,
-        nic: form.nic.trim().toUpperCase(),
+        nic: trimmedNic,
+        fullName: trimmedName,
+        email: trimmedEmail,
+        phone: form.phone.trim() || undefined,
+        address: form.address.trim() || undefined,
       });
-      setNotice(`Prosumer ${form.nic.toUpperCase()} was registered.`);
+      setNotice(`Prosumer ${trimmedNic} was registered successfully.`);
       setIsFormOpen(false);
       setForm(BLANK_FORM);
       await load();
     } catch (caught) {
-      // A NIC or email already in use is rejected by the service.
-      setError(
+      // A NIC or email already in use or validation failure is reported here.
+      const message =
         caught instanceof ApiError
           ? caught.message
-          : "Could not register the prosumer.",
-      );
+          : "Could not register the prosumer.";
+      setModalError(message);
+      setError(message);
     } finally {
       setIsSaving(false);
     }
@@ -135,6 +166,7 @@ export default function ProsumersPage() {
       phone: prosumer.phone ?? "",
       address: prosumer.address ?? "",
     });
+    setEditModalError(null);
     setError(null);
   }
 
@@ -144,20 +176,34 @@ export default function ProsumersPage() {
   async function handleUpdate(event: FormEvent) {
     event.preventDefault();
     if (!editingProsumer) return;
+
+    const trimmedName = editForm.fullName.trim();
+    if (trimmedName.length < 2) {
+      setEditModalError("Full name must be at least 2 characters long.");
+      return;
+    }
+
     setIsSaving(true);
+    setEditModalError(null);
     setError(null);
 
     try {
-      await prosumersApi.update(editingProsumer.id, editForm);
-      setNotice(`Prosumer ${editingProsumer.id} was updated.`);
+      await prosumersApi.update(editingProsumer.id, {
+        ...editForm,
+        fullName: trimmedName,
+        phone: editForm.phone?.trim() || undefined,
+        address: editForm.address?.trim() || undefined,
+      });
+      setNotice(`Prosumer ${editingProsumer.id} profile was updated successfully.`);
       setEditingProsumer(null);
       await load();
     } catch (caught) {
-      setError(
+      const message =
         caught instanceof ApiError
           ? caught.message
-          : "Could not update prosumer profile.",
-      );
+          : "Could not update prosumer profile.";
+      setEditModalError(message);
+      setError(message);
     } finally {
       setIsSaving(false);
     }
@@ -381,12 +427,18 @@ export default function ProsumersPage() {
       <Modal
         title='Register a solar prosumer'
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false);
+          setModalError(null);
+        }}
         footer={
           <>
             <button
               type='button'
-              onClick={() => setIsFormOpen(false)}
+              onClick={() => {
+                setIsFormOpen(false);
+                setModalError(null);
+              }}
               className='btn-secondary'
             >
               Cancel
@@ -402,104 +454,136 @@ export default function ProsumersPage() {
           </>
         }
       >
-        <form
-          id='prosumer-form'
-          onSubmit={handleCreate}
-          className='grid gap-4 sm:grid-cols-2'
-        >
-          <div>
-            <label className='field-label'>NIC (primary key)</label>
-            <input
-              required
-              value={form.nic}
-              onChange={(e) =>
-                setForm({ ...form, nic: e.target.value.toUpperCase() })
-              }
-              className='field-input font-mono'
-              placeholder='200145600789'
+        <div className='space-y-4'>
+          {modalError && (
+            <Alert
+              kind='error'
+              message={modalError}
+              onDismiss={() => setModalError(null)}
             />
-          </div>
+          )}
 
-          <div>
-            <label className='field-label'>Full name</label>
-            <input
-              required
-              value={form.fullName}
-              onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              className='field-input'
-            />
-          </div>
+          <form
+            id='prosumer-form'
+            onSubmit={handleCreate}
+            className='grid gap-4 sm:grid-cols-2'
+          >
+            <div>
+              <label className='field-label'>NIC (primary key)</label>
+              <input
+                required
+                value={form.nic}
+                onChange={(e) =>
+                  setForm({ ...form, nic: e.target.value.toUpperCase() })
+                }
+                className='field-input font-mono'
+                placeholder='200145600789 or 123456789V'
+                minLength={5}
+                maxLength={20}
+              />
+              <p className='mt-1 text-xs text-ink-400'>
+                5-20 alphanumeric characters (e.g. 199912345678 or 123456789V).
+              </p>
+            </div>
 
-          <div>
-            <label className='field-label'>Email</label>
-            <input
-              required
-              type='email'
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className='field-input'
-            />
-          </div>
+            <div>
+              <label className='field-label'>Full name</label>
+              <input
+                required
+                minLength={2}
+                maxLength={120}
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                className='field-input'
+                placeholder='e.g. Kasun Perera'
+              />
+            </div>
 
-          <div>
-            <label className='field-label'>Phone</label>
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className='field-input'
-            />
-          </div>
+            <div>
+              <label className='field-label'>Email</label>
+              <input
+                required
+                type='email'
+                maxLength={120}
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className='field-input'
+                placeholder='kasun@gmail.com'
+              />
+            </div>
 
-          <div className='sm:col-span-2'>
-            <label className='field-label'>Address</label>
-            <input
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              className='field-input'
-            />
-          </div>
+            <div>
+              <label className='field-label'>Phone</label>
+              <input
+                type='tel'
+                maxLength={20}
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className='field-input'
+                placeholder='+94 77 123 4567'
+              />
+            </div>
 
-          <div className='sm:col-span-2'>
-            <label className='field-label'>Temporary password</label>
-            <input
-              required
-              type='password'
-              minLength={6}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className='field-input'
-              placeholder='At least 6 characters'
-            />
-          </div>
+            <div className='sm:col-span-2'>
+              <label className='field-label'>Address</label>
+              <input
+                maxLength={200}
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                className='field-input'
+                placeholder='e.g. 45 Temple Road, Colombo 03'
+              />
+            </div>
 
-          <label className='flex items-center gap-2 text-sm sm:col-span-2'>
-            <input
-              type='checkbox'
-              checked={form.activateImmediately}
-              onChange={(e) =>
-                setForm({ ...form, activateImmediately: e.target.checked })
-              }
-              className='h-4 w-4 rounded border-line-strong'
-            />
-            Activate straight away
-          </label>
+            <div className='sm:col-span-2'>
+              <label className='field-label'>Temporary password</label>
+              <input
+                required
+                type='password'
+                minLength={6}
+                maxLength={100}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className='field-input'
+                placeholder='At least 6 characters'
+              />
+            </div>
 
-          <p className='text-xs text-ink-400 sm:col-span-2'>
-            Prosumers who register themselves from the mobile application always
-            arrive inactive and appear under Pending Activations.
-          </p>
-        </form>
+            <label className='flex items-center gap-2 text-sm sm:col-span-2'>
+              <input
+                type='checkbox'
+                checked={form.activateImmediately}
+                onChange={(e) =>
+                  setForm({ ...form, activateImmediately: e.target.checked })
+                }
+                className='h-4 w-4 rounded border-line-strong'
+              />
+              Activate straight away
+            </label>
+
+            <p className='text-xs text-ink-400 sm:col-span-2'>
+              Prosumers who register themselves from the mobile application always
+              arrive inactive and appear under Pending Activations.
+            </p>
+          </form>
+        </div>
       </Modal>
 
       <Modal
         title={`Edit Prosumer (${editingProsumer?.id ?? ""})`}
         isOpen={editingProsumer !== null}
-        onClose={() => setEditingProsumer(null)}
+        onClose={() => {
+          setEditingProsumer(null);
+          setEditModalError(null);
+        }}
         footer={
           <>
             <button
               type='button'
-              onClick={() => setEditingProsumer(null)}
+              onClick={() => {
+                setEditingProsumer(null);
+                setEditModalError(null);
+              }}
               className='btn-secondary'
             >
               Cancel
@@ -515,69 +599,84 @@ export default function ProsumersPage() {
           </>
         }
       >
-        <form
-          id='edit-prosumer-form'
-          onSubmit={handleUpdate}
-          className='space-y-4'
-        >
-          <div>
-            <label className='field-label'>NIC (primary key)</label>
-            <input
-              disabled
-              value={editingProsumer?.id ?? ""}
-              className='field-input font-mono opacity-70'
+        <div className='space-y-4'>
+          {editModalError && (
+            <Alert
+              kind='error'
+              message={editModalError}
+              onDismiss={() => setEditModalError(null)}
             />
-            <p className='mt-1 text-xs text-ink-400'>
-              National Identity Card number is the primary key and cannot be
-              changed.
-            </p>
-          </div>
+          )}
 
-          <div>
-            <label className='field-label'>Email</label>
-            <input
-              disabled
-              value={editingProsumer?.email ?? ""}
-              className='field-input opacity-70'
-            />
-          </div>
+          <form
+            id='edit-prosumer-form'
+            onSubmit={handleUpdate}
+            className='space-y-4'
+          >
+            <div>
+              <label className='field-label'>NIC (primary key)</label>
+              <input
+                disabled
+                value={editingProsumer?.id ?? ""}
+                className='field-input font-mono opacity-70'
+              />
+              <p className='mt-1 text-xs text-ink-400'>
+                National Identity Card number is the primary key and cannot be
+                changed.
+              </p>
+            </div>
 
-          <div>
-            <label className='field-label'>Full name</label>
-            <input
-              required
-              value={editForm.fullName}
-              onChange={(e) =>
-                setEditForm({ ...editForm, fullName: e.target.value })
-              }
-              className='field-input'
-            />
-          </div>
+            <div>
+              <label className='field-label'>Email</label>
+              <input
+                disabled
+                value={editingProsumer?.email ?? ""}
+                className='field-input opacity-70'
+              />
+            </div>
 
-          <div>
-            <label className='field-label'>Phone</label>
-            <input
-              value={editForm.phone ?? ""}
-              onChange={(e) =>
-                setEditForm({ ...editForm, phone: e.target.value })
-              }
-              className='field-input'
-              placeholder='+94 77 123 4567'
-            />
-          </div>
+            <div>
+              <label className='field-label'>Full name</label>
+              <input
+                required
+                minLength={2}
+                maxLength={120}
+                value={editForm.fullName}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, fullName: e.target.value })
+                }
+                className='field-input'
+              />
+            </div>
 
-          <div>
-            <label className='field-label'>Property address</label>
-            <input
-              value={editForm.address ?? ""}
-              onChange={(e) =>
-                setEditForm({ ...editForm, address: e.target.value })
-              }
-              className='field-input'
-              placeholder='Address with solar array installation'
-            />
-          </div>
-        </form>
+            <div>
+              <label className='field-label'>Phone</label>
+              <input
+                type='tel'
+                maxLength={20}
+                value={editForm.phone ?? ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, phone: e.target.value })
+                }
+                className='field-input'
+                placeholder='+94 77 123 4567'
+              />
+            </div>
+
+            <div>
+              <label className='field-label'>Property address</label>
+              <input
+                maxLength={200}
+                value={editForm.address ?? ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, address: e.target.value })
+                }
+                className='field-input'
+                placeholder='Address with solar array installation'
+              />
+            </div>
+          </form>
+        </div>
       </Modal>
     </>
   );

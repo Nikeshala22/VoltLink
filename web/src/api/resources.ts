@@ -49,6 +49,7 @@ export interface UpdateUserPayload {
   fullName: string
   phone?: string
   address?: string
+  role?: 'Backoffice' | 'GridOperator'
 }
 
 export const usersApi = {
