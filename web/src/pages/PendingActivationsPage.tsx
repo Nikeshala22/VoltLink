@@ -1,3 +1,15 @@
+// -----------------------------------------------------------------------------
+// File        : pages/PendingActivationsPage.tsx
+// Project     : VoltLink Web - Smart Solar Microgrid Trading System
+// Description : The pending activation view required by the specification.
+//               Prosumers who register from the mobile application arrive
+//               inactive and cannot sign in until a back-office officer
+//               approves them here. Outstanding account closure requests are
+//               shown alongside, because only this role may act on them.
+// Author      : <IT Number - Member Name>
+// Created     : 2026-09-03
+// -----------------------------------------------------------------------------
+
 import { useCallback, useEffect, useState } from 'react'
 import { prosumersApi } from '../api/resources'
 import { ApiError } from '../api/client'
@@ -14,6 +26,10 @@ export default function PendingActivationsPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
 
+  /**
+   * Loads both queues together, since a back-office officer works through them
+   * at the same time.
+   */
   const load = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -37,6 +53,9 @@ export default function PendingActivationsPage() {
     void load()
   }, [load])
 
+  /**
+   * Approves a registration so the prosumer can sign in on the mobile app.
+   */
   async function handleActivate(prosumer: User) {
     setBusyId(prosumer.id)
     setError(null)
@@ -53,7 +72,9 @@ export default function PendingActivationsPage() {
     }
   }
 
- 
+  /**
+   * Carries out an account closure the prosumer asked for.
+   */
   async function handleDeactivate(prosumer: User) {
     setBusyId(prosumer.id)
     setError(null)
@@ -65,6 +86,25 @@ export default function PendingActivationsPage() {
       await load()
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Could not deactivate the account.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  /**
+   * Dismisses a closure request, keeping the prosumer account active.
+   */
+  async function handleDismissClosure(prosumer: User) {
+    setBusyId(prosumer.id)
+    setError(null)
+    setNotice(null)
+
+    try {
+      await prosumersApi.activate(prosumer.id)
+      setNotice(`Closure request for ${prosumer.fullName} was dismissed. Account remains active.`)
+      await load()
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'Could not update the account.')
     } finally {
       setBusyId(null)
     }
@@ -180,14 +220,24 @@ export default function PendingActivationsPage() {
                         <td className="font-medium text-ink-900">{p.fullName}</td>
                         <td className="text-xs">{p.email}</td>
                         <td className="text-right">
-                          <button
-                            type="button"
-                            disabled={busyId === p.id}
-                            onClick={() => void handleDeactivate(p)}
-                            className="btn-danger btn-sm"
-                          >
-                            {busyId === p.id ? 'Working…' : 'Deactivate'}
-                          </button>
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              disabled={busyId === p.id}
+                              onClick={() => void handleDismissClosure(p)}
+                              className="btn-secondary btn-sm"
+                            >
+                              Keep active
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busyId === p.id}
+                              onClick={() => void handleDeactivate(p)}
+                              className="btn-danger btn-sm"
+                            >
+                              {busyId === p.id ? 'Working…' : 'Deactivate'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
