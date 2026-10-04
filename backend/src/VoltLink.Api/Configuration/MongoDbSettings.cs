@@ -5,7 +5,7 @@
 // Description : Strongly typed representation of the "MongoDb" section of
 //               appsettings.json. Bound once at start-up and injected wherever
 //               the database connection details are required.
-// Author      : IT23355524   M D L Perera 
+// Author      : IT23307308 Madawalage N S
 // -----------------------------------------------------------------------------
 
 namespace VoltLink.Api.Configuration;

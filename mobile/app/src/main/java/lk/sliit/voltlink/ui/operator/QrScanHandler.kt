@@ -8,6 +8,7 @@
 //               A scanned code is treated purely as text. Its validity, and
 //               whether the booking it names may still be processed, are
 //               decided entirely by the service.
+// Author      : IT23355524   M D L Perera 
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.operator

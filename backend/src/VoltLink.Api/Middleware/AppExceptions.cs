@@ -6,7 +6,7 @@
 //               that accompany them. Services throw these instead of returning
 //               status codes, which keeps HTTP concerns out of the business
 //               logic while still producing precise responses.
-// Author      : IT23355524   M D L Perera
+// Author      : IT23307308 Madawalage N S
 // -----------------------------------------------------------------------------
 
 namespace VoltLink.Api.Middleware;

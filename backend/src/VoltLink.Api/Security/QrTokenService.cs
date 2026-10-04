@@ -7,7 +7,7 @@
 //               only secret, so a QR code cannot be forged or altered by a
 //               prosumer, and the operator's scan is checked against the
 //               server rather than trusted on its own.
-// Author      : IT23215924    M U D Gunatilake
+// Author      : IT23355524   M D L Perera 
 // -----------------------------------------------------------------------------
 
 using System.Security.Cryptography;

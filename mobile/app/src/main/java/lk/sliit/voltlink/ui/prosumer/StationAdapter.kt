@@ -4,6 +4,7 @@
 // Description : RecyclerView adapter for the microgrid node list. Displays the
 //               values supplied by the Web API, including the distance it
 //               calculated, and reports taps back to the activity.
+// Author      : IT23307308 - Madawalage N S
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

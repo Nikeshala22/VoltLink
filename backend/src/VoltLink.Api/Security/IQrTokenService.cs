@@ -4,7 +4,7 @@
 // Module      : Security
 // Description : Contract for issuing and verifying the transaction QR tokens
 //               that a prosumer presents and a grid operator scans.
-// Author      : IT23215924    M U D Gunatilake
+// Author      : IT23355524   M D L Perera 
 // -----------------------------------------------------------------------------
 
 namespace VoltLink.Api.Security;

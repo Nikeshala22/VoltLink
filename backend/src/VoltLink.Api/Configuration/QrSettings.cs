@@ -5,7 +5,7 @@
 // Description : Strongly typed representation of the "Qr" section of
 //               appsettings.json. Supplies the secret used to sign the
 //               transaction QR tokens carried by prosumers.
-// Author      : IT23215924    M U D Gunatilake
+// Author      :IT23355524   M D L Perera 
 // -----------------------------------------------------------------------------
 
 namespace VoltLink.Api.Configuration;
