@@ -9,7 +9,6 @@
 //               canBeModified and canBeCancelled flags are read from the
 //               service, and the service enforces the rule again on the
 //               request itself.
-// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

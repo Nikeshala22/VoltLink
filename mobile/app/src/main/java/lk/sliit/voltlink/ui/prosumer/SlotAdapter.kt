@@ -4,8 +4,6 @@
 // Description : RecyclerView adapter for the bookable window picker. Marks the
 //               chosen window and refuses selection of a full one, using the
 //               remaining capacity the Web API reported.
-// Author      : IT23215924    M U D Gunatilake
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

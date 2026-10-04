@@ -5,8 +5,6 @@
 //               produced by the Web API: bookings awaiting approval, approved
 //               transfers still to come, transfers completed today and how many
 //               microgrid nodes are in service.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.operator

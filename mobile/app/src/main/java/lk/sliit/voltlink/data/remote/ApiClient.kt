@@ -5,8 +5,6 @@
 //               attaches the stored access token to each request, and turns a
 //               refused request into an ApiException carrying the service's own
 //               error code and message.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.data.remote

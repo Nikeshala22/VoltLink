@@ -6,7 +6,6 @@
 //               and restricts the results to the signed in prosumer whatever
 //               this screen asks for. Results are cached in SQLite so the
 //               history is still readable without a connection.
-// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

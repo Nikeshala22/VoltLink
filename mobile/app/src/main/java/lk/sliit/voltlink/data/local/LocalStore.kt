@@ -6,8 +6,6 @@
 //
 //               Everything here is either the session or a copy of data owned
 //               by the Web API. No booking is ever created or changed locally.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.data.local

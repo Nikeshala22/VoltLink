@@ -9,8 +9,6 @@
 //               The cache is never a source of truth: every write goes to the
 //               central Web API, and the tables here are refreshed from the
 //               service response.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.data.local

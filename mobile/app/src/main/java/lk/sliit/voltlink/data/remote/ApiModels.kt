@@ -4,8 +4,6 @@
 // Description : Kotlin mirrors of the request and response contracts of the
 //               VoltLink Web API. Gson maps these by property name, so the
 //               names must match the JSON the service returns exactly.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.data.remote

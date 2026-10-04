@@ -7,7 +7,6 @@
 //               The heading and message are the ones the Web API returned, so
 //               the user is told exactly what the service recorded rather than
 //               a message this application composed for itself.
-// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer

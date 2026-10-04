@@ -4,8 +4,6 @@
 // Description : Retrofit description of every VoltLink Web API endpoint this
 //               application uses. Declarations only: no rule is applied here,
 //               because all business logic lives in the central service.
-// Author      : <IT Number - Member Name>
-// Created     : 2026-09-03
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.data.remote

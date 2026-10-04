@@ -7,7 +7,6 @@
 //               header laid out at the top of the screen ends up underneath the
 //               clock unless the inset is applied as padding. This helper does
 //               that in one place rather than every layout guessing a height.
-// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.util

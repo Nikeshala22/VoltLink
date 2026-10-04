@@ -7,7 +7,6 @@
 //
 //               The nodes and their distances come from the Web API, so this
 //               screen only places the markers it is given.
-// Author      : IT23215924    M U D Gunatilake
 // -----------------------------------------------------------------------------
 
 package lk.sliit.voltlink.ui.prosumer
