@@ -1,8 +1,44 @@
+# VoltLink (Smart Solar Microgrid Trading System)
+
+## SE4040 - Enterprise Application Development
+
+### Assignment 
+
+**Project Title:** Smart Solar Microgrid Trading System - Client-Server Application
+
+**Technologies:**
+- Web Application
+- Pure Native Android Mobile Application
+- C# Web API
+- MongoDB
+- SQLite
+- Google Maps API
+- QR Code
+- IIS Server
+
+---
+
+## 1. Project Description
+
+The Smart Solar Microgrid Trading System is an end-to-end client-server application developed to manage solar energy trading between solar prosumers, microgrid nodes, backoffice users, and grid operators.
+
+The system consists of:
+
+- Web Application
+- Native Android Mobile Application
+- Centralized C# Web Service
+- MongoDB NoSQL Database
+
+Both the Web Application and Android Mobile Application communicate with the centralized Web Service through RESTful API calls.
+
+The Web Application and Mobile Application do not directly access the MongoDB database. Business logic is handled by the central Web Service using the FAT Service architecture.
+
+---
 ## GitHub Repository
 https://github.com/Nikeshala22/VoltLink
 
 
-### Individual Contributions
+## Individual Contributions
 
 | Member               | IT Number      | Contribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | -------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
