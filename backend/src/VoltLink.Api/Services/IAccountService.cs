@@ -86,4 +86,7 @@ public interface IAccountService
 
     Task<UserResponse> ToggleTwoFactorAsync(
         string id, bool enabled, CancellationToken cancellationToken = default);
+
+    Task ResendTwoFactorCodeAsync(
+        string email, CancellationToken cancellationToken = default);
 }

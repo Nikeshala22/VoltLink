@@ -65,7 +65,17 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-  
+    [HttpPost("resend-2fa")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResendTwoFactorAsync(
+        [FromBody] ResendTwoFactorRequest request, CancellationToken cancellationToken)
+    {
+        await _accounts.ResendTwoFactorCodeAsync(request.Email, cancellationToken);
+        return Ok(new { message = "If the account exists and 2FA is active, a fresh security code was sent." });
+    }
+
     [HttpPost("register-prosumer")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]

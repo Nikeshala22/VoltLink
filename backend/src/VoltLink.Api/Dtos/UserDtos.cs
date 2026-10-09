@@ -68,6 +68,13 @@ public class ToggleTwoFactorRequest
     public bool Enabled { get; set; }
 }
 
+public class ResendTwoFactorRequest
+{
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Valid email is required.")]
+    public string Email { get; set; } = string.Empty;
+}
+
 /// <summary>
 /// Self service registration submitted from the Android application.
 /// The NIC becomes the primary key of the created document.

@@ -72,11 +72,19 @@ export default function VerifyOtpPage() {
     }
   }
 
-  function handleResend() {
+  async function handleResend() {
     if (resendCooldown > 0) return
     setResendCooldown(60)
     setError(null)
-    setNotice('A new 6-digit security code has been generated. (Demo Code: 123456)')
+    setNotice(null)
+    try {
+      if (email) {
+        await authApi.resend2fa(email.trim())
+      }
+      setNotice('A fresh 6-digit security code has been sent to your email. (Demo Code: 123456)')
+    } catch {
+      setNotice('A fresh 6-digit security code has been generated. (Demo Code: 123456)')
+    }
   }
 
   return (

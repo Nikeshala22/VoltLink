@@ -27,6 +27,7 @@ public class AccountService : IAccountService
     private readonly IUserRepository _users;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
     private readonly ILogger<AccountService> _logger;
 
     /// <summary>
@@ -36,11 +37,13 @@ public class AccountService : IAccountService
         IUserRepository users,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
+        IEmailService emailService,
         ILogger<AccountService> logger)
     {
         _users = users;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -82,6 +85,9 @@ public class AccountService : IAccountService
             await _users.ReplaceAsync(user, cancellationToken);
 
             _logger.LogInformation("2FA security verification code generated for {Email}: {Code}", user.Email, otp);
+
+            // Dispatch 6-digit OTP code to the user's email via Gmail SMTP
+            await _emailService.SendTwoFactorCodeAsync(user.Email, user.FullName, otp, cancellationToken);
 
             return new LoginResponse(
                 AccessToken: null,
@@ -464,6 +470,27 @@ public class AccountService : IAccountService
         _logger.LogInformation("2FA toggled for {Id}: {Enabled}", id, enabled);
 
         return user.ToResponse();
+    }
+
+    public async Task ResendTwoFactorCodeAsync(
+        string email, CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var user = await _users.GetByEmailAsync(normalizedEmail, cancellationToken);
+
+        if (user is null || !user.IsActive || !user.IsTwoFactorEnabled)
+        {
+            // Do not reveal account existence or 2FA state for security
+            return;
+        }
+
+        var otp = new Random().Next(100000, 999999).ToString();
+        user.TwoFactorCode = otp;
+        user.TwoFactorCodeExpiryUtc = DateTime.UtcNow.AddMinutes(10);
+        await _users.ReplaceAsync(user, cancellationToken);
+
+        _logger.LogInformation("2FA security verification code re-sent for {Email}: {Code}", user.Email, otp);
+        await _emailService.SendTwoFactorCodeAsync(user.Email, user.FullName, otp, cancellationToken);
     }
 
     private async Task<User> GetRequiredAsync(string id, CancellationToken cancellationToken)

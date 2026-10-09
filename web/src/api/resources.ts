@@ -31,6 +31,9 @@ export const authApi = {
   verify2fa: (email: string, code: string) =>
     api.post<LoginResponse>('/auth/verify-2fa', { email, code }),
 
+  resend2fa: (email: string) =>
+    api.post<{ message: string }>('/auth/resend-2fa', { email }),
+
   me: () => api.get<User>('/auth/me'),
 
   toggleMy2fa: (enabled: boolean) =>

@@ -36,6 +36,8 @@ builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));
 builder.Services.Configure<QrSettings>(
     builder.Configuration.GetSection(QrSettings.SectionName));
+builder.Services.Configure<SmtpSettings>(
+    builder.Configuration.GetSection(SmtpSettings.SectionName));
 
 // -----------------------------------------------------------------------------
 // Data access
@@ -56,6 +58,7 @@ builder.Services.AddScoped<DatabaseSeeder>();
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 builder.Services.AddSingleton<IQrTokenService, QrTokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // -----------------------------------------------------------------------------
 // Business services
