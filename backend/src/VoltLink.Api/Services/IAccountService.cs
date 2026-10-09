@@ -80,4 +80,10 @@ public interface IAccountService
     /// active until a back-office officer acts on the request.
     /// </summary>
     Task<UserResponse> RequestDeactivationAsync(string id, CancellationToken cancellationToken = default);
+
+    Task<LoginResponse> VerifyTwoFactorAsync(
+        VerifyTwoFactorRequest request, CancellationToken cancellationToken = default);
+
+    Task<UserResponse> ToggleTwoFactorAsync(
+        string id, bool enabled, CancellationToken cancellationToken = default);
 }

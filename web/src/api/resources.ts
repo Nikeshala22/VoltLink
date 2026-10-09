@@ -25,12 +25,16 @@ import type {
 /* -------------------------------------------------------------------------- */
 
 export const authApi = {
-  /** Signs in and returns the token plus the caller's profile. */
   login: (email: string, password: string) =>
     api.post<LoginResponse>('/auth/login', { email, password }),
 
-  /** Restores the session on page load using the stored token. */
+  verify2fa: (email: string, code: string) =>
+    api.post<LoginResponse>('/auth/verify-2fa', { email, code }),
+
   me: () => api.get<User>('/auth/me'),
+
+  toggleMy2fa: (enabled: boolean) =>
+    api.patch<User>('/auth/me/toggle-2fa', { enabled }),
 }
 
 /* -------------------------------------------------------------------------- */
@@ -50,6 +54,7 @@ export interface UpdateUserPayload {
   phone?: string
   address?: string
   role?: 'Backoffice' | 'GridOperator'
+  isTwoFactorEnabled?: boolean
 }
 
 export const usersApi = {
@@ -65,6 +70,9 @@ export const usersApi = {
   activate: (id: string) => api.patch<User>(`/users/${id}/activate`),
 
   deactivate: (id: string) => api.patch<User>(`/users/${id}/deactivate`),
+
+  toggle2fa: (id: string, enabled: boolean) =>
+    api.patch<User>(`/users/${id}/toggle-2fa`, { enabled }),
 }
 
 /* -------------------------------------------------------------------------- */

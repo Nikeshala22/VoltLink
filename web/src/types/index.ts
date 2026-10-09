@@ -33,13 +33,16 @@ export interface User {
   isActive: boolean
   deactivationRequested: boolean
   createdAtUtc: string
+  isTwoFactorEnabled?: boolean
 }
 
 /** Successful login result. */
 export interface LoginResponse {
-  accessToken: string
-  expiresAtUtc: string
-  user: User
+  accessToken?: string
+  expiresAtUtc?: string
+  user?: User
+  requiresTwoFactor?: boolean
+  email?: string
 }
 
 /** Daily operating window of a station. */

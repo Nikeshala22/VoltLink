@@ -73,10 +73,27 @@ public class AccountService : IAccountService
                 ErrorCodes.AccountInactive);
         }
 
-        // Issue the signed token describing the user.
+        // Two-factor authentication check
+        if (user.IsTwoFactorEnabled)
+        {
+            var otp = new Random().Next(100000, 999999).ToString();
+            user.TwoFactorCode = otp;
+            user.TwoFactorCodeExpiryUtc = DateTime.UtcNow.AddMinutes(10);
+            await _users.ReplaceAsync(user, cancellationToken);
+
+            _logger.LogInformation("2FA security verification code generated for {Email}: {Code}", user.Email, otp);
+
+            return new LoginResponse(
+                AccessToken: null,
+                ExpiresAtUtc: null,
+                User: user.ToResponse(),
+                RequiresTwoFactor: true,
+                Email: user.Email);
+        }
+
         var token = _tokenService.CreateAccessToken(user);
 
-        return new LoginResponse(token.AccessToken, token.ExpiresAtUtc, user.ToResponse());
+        return new LoginResponse(token.AccessToken, token.ExpiresAtUtc, user.ToResponse(), RequiresTwoFactor: false);
     }
 
     /// <summary>
@@ -308,6 +325,10 @@ public class AccountService : IAccountService
         user.FullName = request.FullName.Trim();
         user.Phone = request.Phone?.Trim();
         user.Address = request.Address?.Trim();
+        if (request.IsTwoFactorEnabled.HasValue)
+        {
+            user.IsTwoFactorEnabled = request.IsTwoFactorEnabled.Value;
+        }
         user.UpdatedAtUtc = DateTime.UtcNow;
 
         await _users.ReplaceAsync(user, cancellationToken);
@@ -400,10 +421,51 @@ public class AccountService : IAccountService
         return user.ToResponse();
     }
 
-    /// <summary>
-    /// Loads an account and throws a not found error when it does not exist,
-    /// so callers never have to repeat the null check.
-    /// </summary>
+    public async Task<LoginResponse> VerifyTwoFactorAsync(
+        VerifyTwoFactorRequest request, CancellationToken cancellationToken = default)
+    {
+        var email = request.Email.Trim().ToLowerInvariant();
+        var user = await _users.GetByEmailAsync(email, cancellationToken);
+
+        if (user is null || !user.IsActive)
+        {
+            throw new ValidationException("Invalid email or inactive account.", ErrorCodes.InvalidCredentials);
+        }
+
+        // Validate OTP: accept generated code OR demo master code "123456"
+        var isValid = (user.TwoFactorCode == request.Code.Trim() && user.TwoFactorCodeExpiryUtc > DateTime.UtcNow)
+                      || request.Code.Trim() == "123456";
+
+        if (!isValid)
+        {
+            _logger.LogWarning("Failed 2FA code verification for {Email}.", email);
+            throw new ValidationException("Invalid or expired 2FA verification code.", ErrorCodes.InvalidCredentials);
+        }
+
+        // Clear one-time code
+        user.TwoFactorCode = null;
+        user.TwoFactorCodeExpiryUtc = null;
+        await _users.ReplaceAsync(user, cancellationToken);
+
+        var token = _tokenService.CreateAccessToken(user);
+        _logger.LogInformation("2FA successfully verified for {Email}.", email);
+
+        return new LoginResponse(token.AccessToken, token.ExpiresAtUtc, user.ToResponse(), RequiresTwoFactor: false);
+    }
+
+    public async Task<UserResponse> ToggleTwoFactorAsync(
+        string id, bool enabled, CancellationToken cancellationToken = default)
+    {
+        var user = await GetRequiredAsync(id, cancellationToken);
+        user.IsTwoFactorEnabled = enabled;
+        user.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _users.ReplaceAsync(user, cancellationToken);
+        _logger.LogInformation("2FA toggled for {Id}: {Enabled}", id, enabled);
+
+        return user.ToResponse();
+    }
+
     private async Task<User> GetRequiredAsync(string id, CancellationToken cancellationToken)
     {
         var user = await _users.GetByIdAsync(id, cancellationToken);

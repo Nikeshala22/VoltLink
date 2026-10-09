@@ -33,7 +33,8 @@ public static class UserMappings
             user.Role,
             user.IsActive,
             user.DeactivationRequested,
-            user.CreatedAtUtc);
+            user.CreatedAtUtc,
+            user.IsTwoFactorEnabled);
     }
 
     /// <summary>

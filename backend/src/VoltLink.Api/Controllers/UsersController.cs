@@ -121,4 +121,14 @@ public class UsersController : ControllerBase
         var updated = await _accounts.DeactivateAsync(id, cancellationToken);
         return Ok(updated);
     }
+
+    [HttpPatch("{id}/toggle-2fa")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserResponse>> ToggleTwoFactorAsync(
+        string id, [FromBody] ToggleTwoFactorRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await _accounts.ToggleTwoFactorAsync(id, request.Enabled, cancellationToken);
+        return Ok(updated);
+    }
 }

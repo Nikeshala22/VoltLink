@@ -13,6 +13,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
+import VerifyOtpPage from './pages/VerifyOtpPage'
 import DashboardPage from './pages/DashboardPage'
 import StationsPage from './pages/StationsPage'
 import StationDetailPage from './pages/StationDetailPage'
@@ -27,6 +28,7 @@ export default function App() {
     <Routes>
       {/* The login screen is the only page reachable while signed out. */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
 
       {/* Everything inside the shell requires a signed in staff account. */}
       <Route

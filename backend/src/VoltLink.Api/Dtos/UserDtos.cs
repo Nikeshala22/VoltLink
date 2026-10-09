@@ -26,7 +26,8 @@ public record UserResponse(
     string Role,
     bool IsActive,
     bool DeactivationRequested,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    bool IsTwoFactorEnabled = false);
 
 /// <summary>
 /// Credentials supplied at login by either client.
@@ -46,9 +47,26 @@ public class LoginRequest
 /// which lets the client route straight to the correct home screen.
 /// </summary>
 public record LoginResponse(
-    string AccessToken,
-    DateTime ExpiresAtUtc,
-    UserResponse User);
+    string? AccessToken,
+    DateTime? ExpiresAtUtc,
+    UserResponse? User,
+    bool RequiresTwoFactor = false,
+    string? Email = null);
+
+public class VerifyTwoFactorRequest
+{
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Valid email is required.")]
+    public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "OTP code is required.")]
+    public string Code { get; set; } = string.Empty;
+}
+
+public class ToggleTwoFactorRequest
+{
+    public bool Enabled { get; set; }
+}
 
 /// <summary>
 /// Self service registration submitted from the Android application.
@@ -139,4 +157,5 @@ public class UpdateUserRequest
     public string? Address { get; set; }
 
     public string? Role { get; set; }
+    public bool? IsTwoFactorEnabled { get; set; }
 }

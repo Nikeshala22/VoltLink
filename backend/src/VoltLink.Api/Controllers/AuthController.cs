@@ -54,11 +54,18 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Registers a solar prosumer from the mobile application using the NIC as
-    /// the primary key. The account is created inactive and appears in the
-    /// pending activation list of the web application.
-    /// </summary>
+    [HttpPost("verify-2fa")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<LoginResponse>> VerifyTwoFactorAsync(
+        [FromBody] VerifyTwoFactorRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _accounts.VerifyTwoFactorAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+  
     [HttpPost("register-prosumer")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
@@ -92,5 +99,17 @@ public class AuthController : ControllerBase
         var profile = await _accounts.GetByIdAsync(id, cancellationToken);
 
         return Ok(profile);
+    }
+
+    [HttpPatch("me/toggle-2fa")]
+    [Authorize]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UserResponse>> ToggleMyTwoFactorAsync(
+        [FromBody] ToggleTwoFactorRequest request, CancellationToken cancellationToken)
+    {
+        var id = User.GetUserId();
+        var updated = await _accounts.ToggleTwoFactorAsync(id, request.Enabled, cancellationToken);
+        return Ok(updated);
     }
 }

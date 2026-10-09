@@ -71,4 +71,13 @@ public class User
 
     [BsonElement("updatedAtUtc")]
     public DateTime UpdatedAtUtc { get; set; }
+
+    [BsonElement("isTwoFactorEnabled")]
+    public bool IsTwoFactorEnabled { get; set; }
+
+    [BsonElement("twoFactorCode")]
+    public string? TwoFactorCode { get; set; }
+
+    [BsonElement("twoFactorCodeExpiryUtc")]
+    public DateTime? TwoFactorCodeExpiryUtc { get; set; }
 }
